@@ -19,8 +19,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
 
         :root {
+            /* MODERN THEME VARS */
             --neon-blue: #00c3ff;
             --neon-purple: #bd00ff;
             --neon-orange: #ff9800;
@@ -29,6 +31,11 @@
             --bg-dark: #121214;
             --panel-bg: rgba(22, 22, 28, 0.95);
             --glass-border: rgba(255, 255, 255, 0.15);
+            
+            /* LCD THEME VARS */
+            --lcd-bg: #9BC84A;      /* Updated retro green */
+            --lcd-ink: #2b3026;     /* Dark green/black ink */
+            --lcd-shadow: rgba(43, 48, 38, 0.15); /* Shadow from ink color */
         }
 
         body {
@@ -44,7 +51,146 @@
             padding-bottom: env(safe-area-inset-bottom);
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
+            transition: background 0.3s ease, color 0.3s ease;
         }
+
+        /* --- LCD RETRO THEME OVERRIDES --- */
+        body.theme-lcd {
+            /* Background with Pixel Dots Effect */
+            background-color: var(--lcd-bg);
+            background-image: 
+                radial-gradient(rgba(43, 48, 38, 0.12) 15%, transparent 15%),
+                radial-gradient(rgba(43, 48, 38, 0.12) 15%, transparent 15%);
+            background-position: 0 0, 2px 2px;
+            background-size: 4px 4px;
+            
+            color: var(--lcd-ink);
+            font-family: 'Courier Prime', 'Courier New', monospace;
+            font-weight: 700;
+        }
+
+        body.theme-lcd .glass-panel {
+            background: transparent; /* No background to show dots */
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            border: 2px solid var(--lcd-ink);
+            border-radius: 4px;
+            box-shadow: 4px 4px 0px var(--lcd-shadow);
+        }
+
+        body.theme-lcd header {
+            border-bottom: none;
+            background: rgba(155, 200, 74, 0.8); /* Slight opacity to make text readable over dots */
+        }
+
+        /* FORCE COLOR OVERRIDE for inline styles (Roman numerals & DST) */
+        body.theme-lcd [style*="color"] {
+            color: var(--lcd-ink) !important;
+            text-shadow: none !important;
+        }
+
+        /* Remove Neon Glows specifically */
+        body.theme-lcd .text-neon-blue,
+        body.theme-lcd .text-neon-purple,
+        body.theme-lcd .text-neon-orange,
+        body.theme-lcd .text-neon-red,
+        body.theme-lcd .text-neon-green,
+        body.theme-lcd h1 {
+            color: var(--lcd-ink) !important;
+            text-shadow: none !important;
+        }
+
+        body.theme-lcd select {
+            background-color: transparent;
+            color: var(--lcd-ink);
+            border: 2px solid var(--lcd-ink);
+            border-radius: 2px;
+            font-family: 'Courier Prime', monospace;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        body.theme-lcd .ui-label {
+            color: var(--lcd-ink);
+            font-family: 'Courier Prime', monospace;
+            font-weight: 700;
+            opacity: 0.8;
+        }
+
+        /* LCD Buttons */
+        body.theme-lcd button, 
+        body.theme-lcd .chord-btn {
+            background: rgba(155, 200, 74, 0.4); /* Subtle backing for buttons */
+            border: 2px solid var(--lcd-ink) !important;
+            border-radius: 3px;
+            color: var(--lcd-ink) !important;
+            box-shadow: none !important;
+            font-family: 'Courier Prime', monospace;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+        }
+
+        /* Remove colored row indicators in LCD mode */
+        body.theme-lcd .row-major-triad,
+        body.theme-lcd .row-major-7,
+        body.theme-lcd .row-harm-triad,
+        body.theme-lcd .row-harm-7 {
+            border-bottom-width: 2px;
+            border-bottom-style: solid;
+            border-bottom-color: var(--lcd-ink); 
+        }
+
+        /* Active State - INVERT COLORS */
+        body.theme-lcd .active,
+        body.theme-lcd .hold-active,
+        body.theme-lcd .play-active,
+        body.theme-lcd .btn-hold-active,
+        body.theme-lcd .btn-rec-active {
+            background-color: var(--lcd-ink) !important;
+            color: var(--lcd-bg) !important; /* Text becomes screen color */
+            border-color: var(--lcd-ink) !important;
+            text-shadow: none !important;
+            animation: none !important;
+        }
+        
+        /* Knobs in LCD Mode */
+        body.theme-lcd .knob-circle {
+            background: transparent;
+            border: 2px solid var(--lcd-ink);
+            box-shadow: none;
+        }
+        body.theme-lcd .knob-indicator {
+            background: var(--lcd-ink) !important;
+            box-shadow: none;
+            width: 3px;
+        }
+        body.theme-lcd .knob-scale {
+            color: var(--lcd-ink);
+            font-weight: bold;
+        }
+        
+        /* Force knobs to ink color */
+        body.theme-lcd .knob-container { color: var(--lcd-ink) !important; }
+        body.theme-lcd .knob-blue, 
+        body.theme-lcd .knob-orange, 
+        body.theme-lcd .knob-purple, 
+        body.theme-lcd .knob-red {
+            color: var(--lcd-ink) !important;
+        }
+
+        /* Power button in LCD */
+        body.theme-lcd .power-btn {
+            background: transparent;
+            border-color: var(--lcd-ink);
+            color: var(--lcd-ink);
+        }
+        body.theme-lcd .power-btn:active {
+            background: var(--lcd-ink);
+            color: var(--lcd-bg);
+        }
+
+        /* --- END LCD OVERRIDES --- */
+
 
         /* Portrait Warning */
         #orientation-overlay { display: none; }
@@ -70,6 +216,7 @@
             border: 1px solid var(--glass-border);
             border-radius: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
         }
 
         /* UI Label - Lighter Gray */
@@ -97,6 +244,7 @@
             border: 1px solid #666;
             position: relative;
             box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+            transition: all 0.3s ease;
         }
         .knob-indicator {
             position: absolute;
@@ -236,11 +384,12 @@
     </div>
 
     <!-- Header -->
-    <header class="glass-panel px-3 py-1 flex items-center justify-between shrink-0 h-16 z-20">
+    <header class="glass-panel px-3 py-1 flex items-center justify-between shrink-0 h-16 z-20 transition-all">
         <!-- Left: Controls -->
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-3">
-                <h1 class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">CHORDS</h1>
+                <!-- Theme Trigger: ID added for JS -->
+                <h1 id="app-title" class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit cursor-pointer select-none hover:opacity-80 transition-opacity" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">CHORDS</h1>
                 
                 <div class="flex flex-col items-center justify-center">
                     <select id="key-select" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 outline-none text-xs text-center focus:border-neon-blue transition-colors w-16"></select>
@@ -258,7 +407,7 @@
         </div>
 
         <!-- Header Mixer -->
-        <div class="flex flex-1 items-center justify-evenly border-l border-gray-700 pl-4 ml-2">
+        <div class="flex flex-1 items-center justify-evenly border-l border-gray-700 pl-4 ml-2" style="border-color: inherit;">
             <!-- DRUM -->
             <div class="flex flex-col items-center">
                 <div class="knob-container knob-sm knob-red" data-param="drumVol" data-min="0" data-max="100" data-val="50">
@@ -326,7 +475,7 @@
         <div class="w-52 shrink-0 glass-panel p-3 flex flex-col gap-2 overflow-hidden justify-between">
             
             <!-- 1. Chord Tone -->
-            <div class="flex flex-col gap-0.5 border-b border-gray-700/50 pb-2">
+            <div class="flex flex-col gap-0.5 border-b border-gray-700/50 pb-2" style="border-color: inherit;">
                 <label class="ui-label text-neon-purple">Hangszinek</label>
                 <select id="chord-tone-select" class="bg-gray-800/50 border border-gray-600 rounded px-2 py-1 outline-none text-xs text-white w-full">
                     <!-- Populated by JS -->
@@ -334,7 +483,7 @@
             </div>
 
             <!-- 2. Rhythm Control -->
-            <div class="flex flex-col gap-1.5 bg-gray-900/40 p-2 rounded border border-gray-700/50">
+            <div class="flex flex-col gap-1.5 bg-gray-900/40 p-2 rounded border border-gray-700/50" style="border-color: inherit; background: transparent;">
                 <div class="flex items-center justify-between">
                     <label class="ui-label text-[10px]">RITMUS</label>
                 </div>
@@ -1239,6 +1388,12 @@ const app = {
     },
 
     bindEvents() {
+        // --- RETRO MODE TOGGLE ---
+        const title = document.getElementById('app-title');
+        title.addEventListener('click', () => {
+            document.body.classList.toggle('theme-lcd');
+        });
+
         // JAVÍTÁS: Haptikus visszajelzés kikapcsolása
         document.addEventListener('contextmenu', (e) => {
             if (e.target.closest('button, .chord-btn, .knob-container')) e.preventDefault();
