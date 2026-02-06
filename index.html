@@ -177,7 +177,7 @@
         .row-major-triad { border-bottom: 2px solid #005f7f; }
         .row-major-7 { border-bottom: 2px solid #ff9800; }
         .row-harm-triad { border-bottom: 2px solid #9c27b0; }
-        .row-harm-7 { border-bottom: 2px solid var(--neon-red); } /* CHANGED TO RED */
+        .row-harm-7 { border-bottom: 2px solid var(--neon-red); }
 
         select, input {
             background-color: #1a1a1a;
@@ -238,10 +238,10 @@
     <!-- Header -->
     <header class="glass-panel px-3 py-1 flex items-center justify-between shrink-0 h-16 z-20">
         <!-- Left: Controls -->
-        <div class="flex items-end gap-3">
-            <h1 class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">CHORDS</h1>
+        <div class="flex items-center gap-3">
+            <h1 class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit mr-1" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">CHORDS</h1>
             
-            <div class="flex flex-col items-center">
+            <div class="flex flex-col items-center justify-center">
                 <select id="key-select" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 outline-none text-xs text-center focus:border-neon-blue transition-colors w-16"></select>
                 <span class="ui-label text-[10px] mt-0.5">HANGNEM</span>
             </div>
@@ -298,6 +298,10 @@
                 <div class="knob-scale"><span>0</span><span>100</span></div>
                 <span class="ui-label text-[10px] mt-0 font-bold text-purple-400">TRM</span>
             </div>
+        </div>
+
+        <!-- Exit Button (Right Side with Margin) -->
+        <div class="ml-4">
             <button id="exit-btn" class="power-btn w-8 h-8 rounded-full border border-red-900/50 flex items-center justify-center text-red-500 bg-red-900/10 hover:bg-red-900/30 transition-all shadow-lg" aria-label="Kilépés">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
@@ -350,7 +354,7 @@
 
 <script>
 /**
- * CHORDS v3.2
+ * CHORDS v3.3 - JAVÍTOTT VERZIÓ
  */
 
 /* --- DATA --- */
@@ -377,583 +381,606 @@ const CHORD_PRESETS = {
 
 const DRUM_PATTERNS = {
     'pop':   { name: 'Standard Pop', pat: [1,0,3,0, 2,0,3,0, 1,0,3,0, 2,0,3,0] },
-    'rock':  { name: 'Basic Rock',   pat: [1,0,3,0, 2,0,3,1, 0,0,3,0, 2,0,3,0] },
-    'lofi1': { name: 'Lo-Fi Chill 1',pat: [1,0,0,0, 2,0,0,1, 0,0,1,0, 2,0,3,2] },
-    'lofi2': { name: 'Lo-Fi Chill 2',pat: [1,0,3,0, 0,0,2,0, 0,1,3,0, 2,0,0,0] },
-    'lofi3': { name: 'Drunken Beat', pat: [1,0,0,1, 2,0,0,0, 0,0,1,0, 2,0,0,1] }, 
-    'boom':  { name: 'Boom Bap',     pat: [1,0,3,1, 2,0,3,0, 0,1,3,0, 2,0,3,0] },
-    'disco': { name: 'Disco 4/4',    pat: [1,3,1,3, 2,3,1,3, 1,3,1,3, 2,3,1,3] },
-    'funk':  { name: 'Funky Break',  pat: [1,0,0,1, 2,0,1,0, 0,1,0,0, 2,0,4,0] },
-    'trap':  { name: 'Trap Basic',   pat: [1,0,0,0, 2,0,0,0, 1,0,1,0, 2,0,0,0] }, 
-    'house': { name: 'House',        pat: [1,3,0,3, 2,3,0,3, 1,3,0,3, 2,3,0,3] },
-    'waltz': { name: 'Waltz 3/4',    pat: [1,0,3,3, 2,0,3,0, 1,0,3,3, 2,0,3,0] }, 
-    'rnb':   { name: '90s R&B',      pat: [1,0,3,0, 2,0,3,1, 0,0,3,0, 2,0,3,4] },
-    'jazz':  { name: 'Jazz Swing',   pat: [1,0,3,4, 0,0,3,0, 0,0,3,4, 0,0,3,0] },
-    'dub':   { name: 'Dubstep Lite', pat: [1,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,0,0] },
-    'tech':  { name: 'Techno',       pat: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0] },
-    'boss':  { name: 'Bossa Nova',   pat: [1,0,0,1, 0,0,2,0, 1,0,0,1, 0,0,2,0] },
-    'shuf':  { name: 'Shuffle',      pat: [1,0,0,1, 2,0,0,1, 1,0,0,1, 2,0,0,1] },
-    'slow':  { name: 'Slow Jam',     pat: [1,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,1,0] },
-    'brk':   { name: 'Breakbeat',    pat: [1,0,0,0, 2,0,0,0, 0,0,1,0, 2,0,1,0] },
-    'min':   { name: 'Minimal',      pat: [1,0,0,0, 0,0,0,1, 0,0,0,0, 2,0,0,0] }
+    'disco': { name: 'Disco', pat: [1,0,1,0, 2,0,1,0, 1,0,1,0, 2,0,1,0] },
+    'blues': { name: 'Blues Shuffle', pat: [1,0,0,2, 0,0,1,0, 0,2,0,1, 0,0,0,0] },
+    'techno':{ name: 'Techno', pat: [1,0,2,0, 1,0,2,0, 1,0,2,0, 1,0,2,0] },
+    'funk':  { name: 'Funk', pat: [1,0,3,1, 2,3,0,1, 0,3,0,2, 0,3,1,0] },
+    'dnb':   { name: 'Drum & Bass', pat: [1,0,0,0, 2,0,1,0, 0,0,2,0, 0,1,0,0] },
+    'trap':  { name: 'Trap', pat: [1,0,0,3, 0,3,2,0, 3,0,3,0, 2,0,3,3] }
 };
 
 const CHORDS_MAP = {
-    maj: [0, 4, 7], min: [0, 3, 7], dim: [0, 3, 6], aug: [0, 4, 8],
-    maj7: [0, 4, 7, 11], min7: [0, 3, 7, 10], dom7: [0, 4, 7, 10],
-    minMaj7: [0, 3, 7, 11], dim7: [0, 3, 6, 9], halfDim: [0, 3, 6, 10]
+    maj: [0, 4, 7],
+    m: [0, 3, 7],
+    dim: [0, 3, 6],
+    aug: [0, 4, 8],
+    '7': [0, 4, 7, 10],
+    M7: [0, 4, 7, 11],
+    m7: [0, 3, 7, 10],
+    mM7: [0, 3, 7, 11],
+    m7b5: [0, 3, 6, 10],
+    dim7: [0, 3, 6, 9]
 };
 
 const CHORD_QUALITY_MAP = {
-    M: 'maj', m: 'min', dim: 'dim', aug: 'aug',
-    M7: 'maj7', m7: 'min7', '7': 'dom7',
-    mM7: 'minMaj7', dim7: 'dim7', m7b5: 'halfDim'
+    'M': 'maj',
+    'm': 'm',
+    'dim': 'dim',
+    'aug': 'aug',
+    '7': '7',
+    'M7': 'M7',
+    'm7': 'm7',
+    'mM7': 'mM7',
+    'm7b5': 'm7b5',
+    'dim7': 'dim7'
 };
 
-class AudioEngine {
-    constructor() {
-        this.ctx = null;
-        this.master = null;
-        this.bus = { chord: null, drum: null };
-        this.filter = null;
-        this.limiter = null;
-        this.lfo = null;
-        this.lfoGain = null;
-        this.shaper = null;
-        this.voices = [];
-        this.previousVoicing = null;
-        this.noiseBuffers = { snare: null, hat: null };
-        this.voiceCount = 4;
-        this.fxNodes = {};
-        
-        this.params = {
-            filterFreq: 2000,
-            detune: 15,
-            masterVol: 0.5,
-            chordVol: 0.5,
-            drumVol: 0.5,
-            chordTone: 'mellotron'
-        };
+/* --- AUDIO ENGINE --- */
+const AudioEngine = {
+    ctx: null,
+    master: null,
+    limiter: null,
+    bus: { chord: null, drum: null },
+    filter: null,
+    shaper: null,
+    lfo: null,
+    lfoGain: null,
+    voices: [],
+    voiceCount: 4,
+    previousVoicing: null,
+    noiseBuffers: {},
+    fxNodes: {},
 
-        this.fxState = {
-            reverb: 0,
-            distortion: 0,
-            tremolo: 0
-        };
-        
-        this.dest = null;
-        this.recorder = null;
-        this.chunks = [];
+    params: {
+        filterFreq: 2000,
+        detune: 15,
+        masterVol: 0.5,
+        chordVol: 0.5,
+        drumVol: 0.5,
+        chordTone: 'mellotron'
+    },
+
+    fxState: {
+        reverb: 0,
+        distortion: 0,
+        tremolo: 0
+    },
+    
+    dest: null,
+    recorder: null,
+    chunks: []
+};
+
+AudioEngine.init = function() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    this.ctx = new AC({ latencyHint: 'interactive' });
+    
+    // --- MASTER CHAIN ---
+    this.limiter = this.ctx.createDynamicsCompressor();
+    this.limiter.threshold.value = -10;
+    this.limiter.ratio.value = 12;
+    this.limiter.attack.value = 0.003;
+    
+    this.master = this.ctx.createGain();
+    this.master.gain.value = this.params.masterVol;
+    
+    // --- BUSES ---
+    this.bus.chord = this.ctx.createGain();
+    this.bus.chord.gain.value = this.params.chordVol;
+    this.bus.drum = this.ctx.createGain();
+    this.bus.drum.gain.value = this.params.drumVol;
+
+    // --- GLOBAL FX ---
+    this.filter = this.ctx.createBiquadFilter();
+    this.filter.type = "lowpass";
+    this.filter.Q.value = 0.7; 
+    this.filter.frequency.value = this.params.filterFreq;
+    
+    this.shaper = this.ctx.createWaveShaper();
+    this.updateCharacter(25); 
+
+    this.lfo = this.ctx.createOscillator();
+    this.lfo.frequency.value = 1.5; 
+    this.lfoGain = this.ctx.createGain();
+    this.lfoGain.gain.value = 0;
+    this.lfo.connect(this.lfoGain);
+    this.lfo.start();
+
+    // --- CHORD FX CHAIN (chord only, drums bypass) ---
+    this.setupChordEffects();
+
+    // ROUTING
+    this.bus.chord.connect(this.fxNodes.distortionInput);
+    this.bus.drum.connect(this.master);
+
+    this.filter.connect(this.shaper);
+    this.shaper.connect(this.master);
+    this.master.connect(this.limiter);
+    this.limiter.connect(this.ctx.destination);
+    
+    this.dest = this.ctx.createMediaStreamDestination();
+    this.limiter.connect(this.dest);
+
+    this.noiseBuffers.snare = this.createNoiseBuffer(0.15, 0.8);
+    this.noiseBuffers.hat = this.createNoiseBuffer(0.05, 0.5);
+    this.createVoiceBank();
+};
+
+AudioEngine.resume = function() { 
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); 
+};
+
+AudioEngine.setVol = function(type, val) {
+    if(!this.ctx) return;
+    const gain = val / 100;
+    if(type === 'chord') {
+        this.params.chordVol = gain;
+        this.bus.chord.gain.setTargetAtTime(gain, this.ctx.currentTime, 0.05);
     }
-
-    init() {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        this.ctx = new AC({ latencyHint: 'interactive' });
-        
-        // --- MASTER CHAIN ---
-        this.limiter = this.ctx.createDynamicsCompressor();
-        this.limiter.threshold.value = -10;
-        this.limiter.ratio.value = 12;
-        this.limiter.attack.value = 0.003;
-        
-        this.master = this.ctx.createGain();
-        this.master.gain.value = this.params.masterVol;
-        
-        // --- BUSES ---
-        this.bus.chord = this.ctx.createGain();
-        this.bus.chord.gain.value = this.params.chordVol;
-        this.bus.drum = this.ctx.createGain();
-        this.bus.drum.gain.value = this.params.drumVol;
-
-        // --- GLOBAL FX ---
-        this.filter = this.ctx.createBiquadFilter();
-        this.filter.type = "lowpass";
-        this.filter.Q.value = 0.7; 
-        this.filter.frequency.value = this.params.filterFreq;
-        
-        this.shaper = this.ctx.createWaveShaper();
-        this.updateCharacter(25); 
-
-        this.lfo = this.ctx.createOscillator();
-        this.lfo.frequency.value = 1.5; 
-        this.lfoGain = this.ctx.createGain();
-        this.lfoGain.gain.value = 0;
-        this.lfo.connect(this.lfoGain);
-        this.lfo.start();
-
-        // --- CHORD FX CHAIN (chord only, drums bypass) ---
-        this.setupChordEffects();
-
-        // ROUTING
-        this.bus.chord.connect(this.fxNodes.distortionInput);
-        this.bus.drum.connect(this.master);
-
-        this.filter.connect(this.shaper);
-        this.shaper.connect(this.master);
-        this.master.connect(this.limiter);
-        this.limiter.connect(this.ctx.destination);
-        
-        this.dest = this.ctx.createMediaStreamDestination();
-        this.limiter.connect(this.dest);
-
-        this.noiseBuffers.snare = this.createNoiseBuffer(0.15, 0.8);
-        this.noiseBuffers.hat = this.createNoiseBuffer(0.05, 0.5);
-        this.createVoiceBank();
+    if(type === 'drum') {
+        this.params.drumVol = gain;
+        this.bus.drum.gain.setTargetAtTime(gain, this.ctx.currentTime, 0.05);
     }
+};
 
-    resume() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); }
+AudioEngine.setupChordEffects = function() {
+    const n = this.fxNodes;
 
-    setVol(type, val) {
-        if(!this.ctx) return;
-        const gain = val / 100;
-        if(type === 'chord') this.bus.chord.gain.setTargetAtTime(gain, this.ctx.currentTime, 0.05);
-        if(type === 'drum') this.bus.drum.gain.setTargetAtTime(gain, this.ctx.currentTime, 0.05);
+    n.distortionInput = this.ctx.createGain();
+    n.distortionDry = this.ctx.createGain();
+    n.distortionWet = this.ctx.createGain();
+    n.distortionSum = this.ctx.createGain();
+    n.distortionDrive = this.ctx.createGain();
+    n.distortion = this.ctx.createWaveShaper();
+    n.distortion.oversample = '4x';
+
+    n.tremoloGain = this.ctx.createGain();
+    n.tremoloDepth = this.ctx.createGain();
+    n.tremoloLfo = this.ctx.createOscillator();
+    n.tremoloLfo.connect(n.tremoloDepth);
+    n.tremoloDepth.connect(n.tremoloGain.gain);
+    n.tremoloLfo.start();
+
+    n.reverbConvolver = this.ctx.createConvolver();
+    n.reverbConvolver.buffer = this.createReverbImpulse(2.8, 2.6);
+    n.reverbDry = this.ctx.createGain();
+    n.reverbWet = this.ctx.createGain();
+
+    n.distortionInput.connect(n.distortionDry);
+    n.distortionDry.connect(n.distortionSum);
+
+    n.distortionInput.connect(n.distortionDrive);
+    n.distortionDrive.connect(n.distortion);
+    n.distortion.connect(n.distortionWet);
+    n.distortionWet.connect(n.distortionSum);
+
+    n.distortionSum.connect(n.tremoloGain);
+
+    n.tremoloGain.connect(n.reverbDry);
+    n.reverbDry.connect(this.filter);
+
+    n.tremoloGain.connect(n.reverbConvolver);
+    n.reverbConvolver.connect(n.reverbWet);
+    n.reverbWet.connect(this.filter);
+
+    this.updateDistortion();
+    this.updateTremolo();
+    this.updateReverb();
+};
+
+AudioEngine.setEffectAmount = function(name, amount) {
+    if (typeof this.fxState[name] === 'undefined') return;
+    this.fxState[name] = Math.max(0, Math.min(100, amount));
+    this.updateEffect(name);
+};
+
+AudioEngine.updateEffect = function(name) {
+    if (!this.ctx) return;
+    if (name === 'distortion') this.updateDistortion();
+    if (name === 'tremolo') this.updateTremolo();
+    if (name === 'reverb') this.updateReverb();
+};
+
+AudioEngine.updateDistortion = function() {
+    const n = this.fxNodes;
+    if (!n.distortion || !n.distortionDrive) return;
+    const amount = this.fxState.distortion;
+    const drive = 1 + (amount / 100) * 4.5;
+    const wet = (amount / 100) * 0.85;
+    n.distortionDrive.gain.setTargetAtTime(drive, this.ctx.currentTime, 0.05);
+    n.distortion.curve = amount > 0 ? this.createSoftClipCurve(amount) : this.createIdentityCurve();
+    n.distortionWet.gain.setTargetAtTime(wet, this.ctx.currentTime, 0.05);
+    n.distortionDry.gain.setTargetAtTime(1 - (wet * 0.65), this.ctx.currentTime, 0.05);
+};
+
+AudioEngine.updateTremolo = function() {
+    const n = this.fxNodes;
+    if (!n.tremoloGain) return;
+    const amount = this.fxState.tremolo;
+    const depth = (amount / 100) * 0.7;
+    n.tremoloGain.gain.setTargetAtTime(1 - (depth * 0.5), this.ctx.currentTime, 0.05);
+    n.tremoloDepth.gain.setTargetAtTime(depth, this.ctx.currentTime, 0.05);
+    n.tremoloLfo.frequency.setTargetAtTime(2 + (amount * 0.06), this.ctx.currentTime, 0.1);
+};
+
+AudioEngine.updateReverb = function() {
+    const n = this.fxNodes;
+    if (!n.reverbDry) return;
+    const wet = (this.fxState.reverb / 100) * 0.8;
+    n.reverbWet.gain.setTargetAtTime(wet, this.ctx.currentTime, 0.06);
+    n.reverbDry.gain.setTargetAtTime(1 - (wet * 0.45), this.ctx.currentTime, 0.06);
+};
+
+AudioEngine.createSoftClipCurve = function(amount) {
+    const samples = 2048;
+    const curve = new Float32Array(samples);
+    const k = 1 + (amount / 100) * 8;
+    for (let i = 0; i < samples; i++) {
+        const x = ((i * 2) / samples) - 1;
+        curve[i] = Math.tanh(k * x) / Math.tanh(k);
     }
+    return curve;
+};
 
-    setupChordEffects() {
-        const n = this.fxNodes;
+AudioEngine.createIdentityCurve = function() {
+    const samples = 512;
+    const curve = new Float32Array(samples);
+    for (let i = 0; i < samples; i++) curve[i] = ((i * 2) / (samples - 1)) - 1;
+    return curve;
+};
 
-        n.distortionInput = this.ctx.createGain();
-        n.distortionDry = this.ctx.createGain();
-        n.distortionWet = this.ctx.createGain();
-        n.distortionSum = this.ctx.createGain();
-        n.distortionDrive = this.ctx.createGain();
-        n.distortion = this.ctx.createWaveShaper();
-        n.distortion.oversample = '4x';
-
-        n.tremoloGain = this.ctx.createGain();
-        n.tremoloDepth = this.ctx.createGain();
-        n.tremoloLfo = this.ctx.createOscillator();
-        n.tremoloLfo.connect(n.tremoloDepth);
-        n.tremoloDepth.connect(n.tremoloGain.gain);
-        n.tremoloLfo.start();
-
-        n.reverbConvolver = this.ctx.createConvolver();
-        n.reverbConvolver.buffer = this.createReverbImpulse(2.8, 2.6);
-        n.reverbDry = this.ctx.createGain();
-        n.reverbWet = this.ctx.createGain();
-
-        n.distortionInput.connect(n.distortionDry);
-        n.distortionDry.connect(n.distortionSum);
-
-        n.distortionInput.connect(n.distortionDrive);
-        n.distortionDrive.connect(n.distortion);
-        n.distortion.connect(n.distortionWet);
-        n.distortionWet.connect(n.distortionSum);
-
-        n.distortionSum.connect(n.tremoloGain);
-
-        n.tremoloGain.connect(n.reverbDry);
-        n.reverbDry.connect(this.filter);
-
-        n.tremoloGain.connect(n.reverbConvolver);
-        n.reverbConvolver.connect(n.reverbWet);
-        n.reverbWet.connect(this.filter);
-
-        this.updateDistortion();
-        this.updateTremolo();
-        this.updateReverb();
-    }
-
-    setEffectAmount(name, amount) {
-        if (typeof this.fxState[name] === 'undefined') return;
-        this.fxState[name] = Math.max(0, Math.min(100, amount));
-        this.updateEffect(name);
-    }
-
-    updateEffect(name) {
-        if (!this.ctx) return;
-        if (name === 'distortion') this.updateDistortion();
-        if (name === 'tremolo') this.updateTremolo();
-        if (name === 'reverb') this.updateReverb();
-    }
-
-    updateDistortion() {
-        const n = this.fxNodes;
-        if (!n.distortion || !n.distortionDrive) return;
-        const amount = this.fxState.distortion;
-        const drive = 1 + (amount / 100) * 4.5;
-        const wet = (amount / 100) * 0.85;
-        n.distortionDrive.gain.setTargetAtTime(drive, this.ctx.currentTime, 0.05);
-        n.distortion.curve = amount > 0 ? this.createSoftClipCurve(amount) : this.createIdentityCurve();
-        n.distortionWet.gain.setTargetAtTime(wet, this.ctx.currentTime, 0.05);
-        n.distortionDry.gain.setTargetAtTime(1 - (wet * 0.65), this.ctx.currentTime, 0.05);
-    }
-
-    updateTremolo() {
-        const n = this.fxNodes;
-        if (!n.tremoloGain) return;
-        const amount = this.fxState.tremolo;
-        const depth = (amount / 100) * 0.7;
-        n.tremoloGain.gain.setTargetAtTime(1 - (depth * 0.5), this.ctx.currentTime, 0.05);
-        n.tremoloDepth.gain.setTargetAtTime(depth, this.ctx.currentTime, 0.05);
-        n.tremoloLfo.frequency.setTargetAtTime(2 + (amount * 0.06), this.ctx.currentTime, 0.1);
-    }
-
-    updateReverb() {
-        const n = this.fxNodes;
-        if (!n.reverbDry) return;
-        const wet = (this.fxState.reverb / 100) * 0.8;
-        n.reverbWet.gain.setTargetAtTime(wet, this.ctx.currentTime, 0.06);
-        n.reverbDry.gain.setTargetAtTime(1 - (wet * 0.45), this.ctx.currentTime, 0.06);
-    }
-
-    createSoftClipCurve(amount) {
-        const samples = 2048;
-        const curve = new Float32Array(samples);
-        const k = 1 + (amount / 100) * 8;
-        for (let i = 0; i < samples; i++) {
-            const x = ((i * 2) / samples) - 1;
-            curve[i] = Math.tanh(k * x) / Math.tanh(k);
-        }
-        return curve;
-    }
-
-    createIdentityCurve() {
-        const samples = 512;
-        const curve = new Float32Array(samples);
-        for (let i = 0; i < samples; i++) curve[i] = ((i * 2) / (samples - 1)) - 1;
-        return curve;
-    }
-
-    createReverbImpulse(seconds, decay) {
-        const length = Math.floor(this.ctx.sampleRate * seconds);
-        const impulse = this.ctx.createBuffer(2, length, this.ctx.sampleRate);
-        for (let ch = 0; ch < 2; ch++) {
-            const data = impulse.getChannelData(ch);
-            for (let i = 0; i < length; i++) {
-                const t = i / length;
-                const env = Math.pow(1 - t, decay);
-                data[i] = ((Math.random() * 2) - 1) * env;
-            }
-        }
-        return impulse;
-    }
-
-    createVoiceBank() {
-        const panPositions = [-0.18, -0.06, 0.06, 0.18];
-        for (let i = 0; i < this.voiceCount; i++) {
-            const osc = this.ctx.createOscillator();
-            const subOsc = this.ctx.createOscillator();
-            const filter = this.ctx.createBiquadFilter();
-            const gain = this.ctx.createGain();
-            const subGain = this.ctx.createGain();
-            const panner = this.ctx.createStereoPanner();
-
-            osc.type = 'triangle';
-            subOsc.type = 'sine';
-            filter.type = 'lowpass';
-            filter.frequency.value = 1800;
-            filter.Q.value = 0.7;
-            gain.gain.value = 0.0001;
-            subGain.gain.value = 0.0;
-            panner.pan.value = panPositions[i] || 0;
-
-            this.lfoGain.connect(osc.detune);
-            osc.connect(filter);
-            filter.connect(gain);
-            subOsc.connect(subGain);
-            subGain.connect(gain);
-            gain.connect(panner);
-            panner.connect(this.bus.chord);
-
-            osc.start();
-            subOsc.start();
-
-            this.voices.push({
-                osc,
-                subOsc,
-                filter,
-                gain,
-                subGain,
-                panner,
-                detuneBase: (i - 1.5) * 0.7
-            });
+AudioEngine.createReverbImpulse = function(seconds, decay) {
+    const length = Math.floor(this.ctx.sampleRate * seconds);
+    const impulse = this.ctx.createBuffer(2, length, this.ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+        const data = impulse.getChannelData(ch);
+        for (let i = 0; i < length; i++) {
+            const t = i / length;
+            const env = Math.pow(1 - t, decay);
+            data[i] = ((Math.random() * 2) - 1) * env;
         }
     }
+    return impulse;
+};
 
-    updateCharacter(amount) {
-        if(!this.ctx) return;
-        const k = amount * 0.5; 
-        const samples = 44100;
-        const curve = new Float32Array(samples);
-        const deg = Math.PI / 180;
-        for (let i = 0; i < samples; ++i) {
-            let x = (i * 2) / samples - 1;
-            curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x)); 
+AudioEngine.createVoiceBank = function() {
+    const panPositions = [-0.18, -0.06, 0.06, 0.18];
+    for (let i = 0; i < this.voiceCount; i++) {
+        const osc = this.ctx.createOscillator();
+        const subOsc = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+        const subGain = this.ctx.createGain();
+        const panner = this.ctx.createStereoPanner();
+
+        osc.type = 'triangle';
+        subOsc.type = 'sine';
+        filter.type = 'lowpass';
+        filter.frequency.value = 1800;
+        filter.Q.value = 0.7;
+        gain.gain.value = 0.0001;
+        subGain.gain.value = 0.0;
+        panner.pan.value = panPositions[i] || 0;
+
+        this.lfoGain.connect(osc.detune);
+        osc.connect(filter);
+        filter.connect(gain);
+        subOsc.connect(subGain);
+        subGain.connect(gain);
+        gain.connect(panner);
+        panner.connect(this.bus.chord);
+
+        osc.start();
+        subOsc.start();
+
+        this.voices.push({
+            osc,
+            subOsc,
+            filter,
+            gain,
+            subGain,
+            panner,
+            detuneBase: (i - 1.5) * 0.7
+        });
+    }
+};
+
+AudioEngine.updateCharacter = function(amount) {
+    if(!this.ctx) return;
+    const k = amount * 0.5; 
+    const samples = 44100;
+    const curve = new Float32Array(samples);
+    const deg = Math.PI / 180;
+    for (let i = 0; i < samples; ++i) {
+        let x = (i * 2) / samples - 1;
+        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x)); 
+    }
+    this.shaper.curve = curve;
+};
+
+AudioEngine.resetVoicing = function() {
+    this.previousVoicing = null;
+};
+
+AudioEngine.midiToFreq = function(midi) {
+    return 440 * Math.pow(2, (midi - 69) / 12);
+};
+
+AudioEngine.createNoiseBuffer = function(seconds, amount) {
+    const size = Math.floor(this.ctx.sampleRate * seconds);
+    const buffer = this.ctx.createBuffer(1, size, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < size; i++) data[i] = (Math.random() * 2 - 1) * amount;
+    return buffer;
+};
+
+AudioEngine.getChordPitchClasses = function(rootIndex, type) {
+    const intervals = CHORDS_MAP[type] || CHORDS_MAP.maj;
+    const pcs = intervals.map(interval => (rootIndex + interval + 120) % 12);
+    if (pcs.length === 3) return [pcs[0], pcs[1], pcs[2], pcs[1]];
+    if (pcs.length > this.voiceCount) return pcs.slice(0, this.voiceCount);
+    if (pcs.length === this.voiceCount) return pcs;
+    while (pcs.length < this.voiceCount) pcs.push(pcs[0]);
+    return pcs;
+};
+
+AudioEngine.getMidiCandidatesForPitchClass = function(pc, minMidi, maxMidi, refMidi) {
+    const out = [];
+    for (let oct = 0; oct <= 8; oct++) {
+        const note = (oct * 12) + pc;
+        if (note >= minMidi && note <= maxMidi) out.push(note);
+    }
+    out.sort((a, b) => Math.abs(a - refMidi) - Math.abs(b - refMidi));
+    return out;
+};
+
+AudioEngine.uniquePermutations = function(values) {
+    const result = [];
+    const used = new Array(values.length).fill(false);
+    const sorted = values.slice().sort((a, b) => a - b);
+    const walk = (path) => {
+        if (path.length === sorted.length) {
+            result.push(path.slice());
+            return;
         }
-        this.shaper.curve = curve;
-    }
-
-    resetVoicing() {
-        this.previousVoicing = null;
-    }
-
-    midiToFreq(midi) {
-        return 440 * Math.pow(2, (midi - 69) / 12);
-    }
-
-    createNoiseBuffer(seconds, amount) {
-        const size = Math.floor(this.ctx.sampleRate * seconds);
-        const buffer = this.ctx.createBuffer(1, size, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < size; i++) data[i] = (Math.random() * 2 - 1) * amount;
-        return buffer;
-    }
-
-    getChordPitchClasses(rootIndex, type) {
-        const intervals = CHORDS_MAP[type] || CHORDS_MAP.maj;
-        const pcs = intervals.map(interval => (rootIndex + interval + 120) % 12);
-        if (pcs.length === 3) return [pcs[0], pcs[1], pcs[2], pcs[1]];
-        if (pcs.length > this.voiceCount) return pcs.slice(0, this.voiceCount);
-        if (pcs.length === this.voiceCount) return pcs;
-        while (pcs.length < this.voiceCount) pcs.push(pcs[0]);
-        return pcs;
-    }
-
-    getMidiCandidatesForPitchClass(pc, minMidi, maxMidi, refMidi) {
-        const out = [];
-        for (let oct = 0; oct <= 8; oct++) {
-            const note = (oct * 12) + pc;
-            if (note >= minMidi && note <= maxMidi) out.push(note);
+        for (let i = 0; i < sorted.length; i++) {
+            if (used[i]) continue;
+            if (i > 0 && sorted[i] === sorted[i - 1] && !used[i - 1]) continue;
+            used[i] = true;
+            path.push(sorted[i]);
+            walk(path);
+            path.pop();
+            used[i] = false;
         }
-        out.sort((a, b) => Math.abs(a - refMidi) - Math.abs(b - refMidi));
-        return out;
-    }
+    };
+    walk([]);
+    return result;
+};
 
-    uniquePermutations(values) {
-        const result = [];
-        const used = new Array(values.length).fill(false);
-        const sorted = values.slice().sort((a, b) => a - b);
-        const walk = (path) => {
-            if (path.length === sorted.length) {
-                result.push(path.slice());
+AudioEngine.scoreVoicing = function(voicing, refs, centerMidi, chordPitchClasses) {
+    let cost = 0;
+    for (let i = 0; i < voicing.length; i++) {
+        const move = Math.abs(voicing[i] - refs[i]);
+        cost += move * move;
+        if (move > 4) cost += (move - 4) * 22;
+        if (move === 0 && chordPitchClasses.includes(refs[i] % 12)) cost -= 24;
+        if (i > 0) {
+            const spacing = voicing[i] - voicing[i - 1];
+            if (spacing < 3) cost += 90;
+            if (spacing > 9) cost += (spacing - 9) * 10;
+        }
+    }
+    const avg = voicing.reduce((sum, n) => sum + n, 0) / voicing.length;
+    cost += Math.abs(avg - centerMidi) * 1.1;
+    return cost;
+};
+
+AudioEngine.chooseBestVoicing = function(pitchClasses) {
+    const centerMidi = 58;
+    const minMidi = 46;
+    const maxMidi = 70;
+    const refs = this.previousVoicing && this.previousVoicing.length === this.voiceCount
+        ? this.previousVoicing.slice()
+        : [50, 53, 57, 60];
+
+    let bestVoicing = null;
+    let bestCost = Infinity;
+    const permutations = this.uniquePermutations(pitchClasses);
+
+    permutations.forEach(perm => {
+        const choices = perm.map((pc, idx) => this.getMidiCandidatesForPitchClass(pc, minMidi, maxMidi, refs[idx]));
+        const current = new Array(this.voiceCount);
+
+        const search = (idx, runningCost) => {
+            if (runningCost >= bestCost) return;
+            if (idx === this.voiceCount) {
+                const finalCost = this.scoreVoicing(current, refs, centerMidi, pitchClasses);
+                if (finalCost < bestCost) {
+                    bestCost = finalCost;
+                    bestVoicing = current.slice();
+                }
                 return;
             }
-            for (let i = 0; i < sorted.length; i++) {
-                if (used[i]) continue;
-                if (i > 0 && sorted[i] === sorted[i - 1] && !used[i - 1]) continue;
-                used[i] = true;
-                path.push(sorted[i]);
-                walk(path);
-                path.pop();
-                used[i] = false;
+
+            for (const note of choices[idx]) {
+                if (idx > 0 && note <= current[idx - 1]) continue;
+                const localMove = Math.abs(note - refs[idx]);
+                let localCost = localMove * localMove;
+                if (localMove > 4) localCost += (localMove - 4) * 20;
+                if (localMove === 0 && pitchClasses.includes(refs[idx] % 12)) localCost -= 20;
+                if (idx > 0) {
+                    const spacing = note - current[idx - 1];
+                    if (spacing < 3) continue;
+                    if (spacing > 9) localCost += (spacing - 9) * 8;
+                }
+                current[idx] = note;
+                search(idx + 1, runningCost + localCost);
             }
         };
-        walk([]);
-        return result;
-    }
 
-    scoreVoicing(voicing, refs, centerMidi, chordPitchClasses) {
-        let cost = 0;
-        for (let i = 0; i < voicing.length; i++) {
-            const move = Math.abs(voicing[i] - refs[i]);
-            cost += move * move;
-            if (move > 4) cost += (move - 4) * 22;
-            if (move === 0 && chordPitchClasses.includes(refs[i] % 12)) cost -= 24;
-            if (i > 0) {
-                const spacing = voicing[i] - voicing[i - 1];
-                if (spacing < 3) cost += 90;
-                if (spacing > 9) cost += (spacing - 9) * 10;
-            }
-        }
-        const avg = voicing.reduce((sum, n) => sum + n, 0) / voicing.length;
-        cost += Math.abs(avg - centerMidi) * 1.1;
-        return cost;
-    }
+        search(0, 0);
+    });
 
-    chooseBestVoicing(pitchClasses) {
-        const centerMidi = 58;
-        const minMidi = 46;
-        const maxMidi = 70;
-        const refs = this.previousVoicing && this.previousVoicing.length === this.voiceCount
-            ? this.previousVoicing.slice()
-            : [50, 53, 57, 60];
+    if (!bestVoicing) bestVoicing = refs.slice();
+    this.previousVoicing = bestVoicing.slice();
+    return bestVoicing.map(midi => this.midiToFreq(midi));
+};
 
-        let bestVoicing = null;
-        let bestCost = Infinity;
-        const permutations = this.uniquePermutations(pitchClasses);
+AudioEngine.getVoicedFrequencies = function(rootIndex, type) {
+    const pitchClasses = this.getChordPitchClasses(rootIndex, type);
+    return this.chooseBestVoicing(pitchClasses);
+};
 
-        permutations.forEach(perm => {
-            const choices = perm.map((pc, idx) => this.getMidiCandidatesForPitchClass(pc, minMidi, maxMidi, refs[idx]));
-            const current = new Array(this.voiceCount);
+AudioEngine.playChord = function(rootIndex, type) {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const preset = CHORD_PRESETS[this.params.chordTone] || CHORD_PRESETS.mellotron;
+    const freqs = this.getVoicedFrequencies(rootIndex, type);
+    
+    // JAVÍTÁS: Simább hangindítás
+    const attackTime = Math.max(0.015, preset.attack || 0.06);
+    const glideTime = 0.04; // Rövidebb glide
+    const targetGain = Math.min(0.16, 0.18 / Math.max(1, freqs.length));
 
-            const search = (idx, runningCost) => {
-                if (runningCost >= bestCost) return;
-                if (idx === this.voiceCount) {
-                    const finalCost = this.scoreVoicing(current, refs, centerMidi, pitchClasses);
-                    if (finalCost < bestCost) {
-                        bestCost = finalCost;
-                        bestVoicing = current.slice();
-                    }
-                    return;
-                }
+    this.voices.forEach((voice, idx) => {
+        const freq = freqs[idx];
+        const hasVoice = typeof freq === 'number' && Number.isFinite(freq);
 
-                for (const note of choices[idx]) {
-                    if (idx > 0 && note <= current[idx - 1]) continue;
-                    const localMove = Math.abs(note - refs[idx]);
-                    let localCost = localMove * localMove;
-                    if (localMove > 4) localCost += (localMove - 4) * 20;
-                    if (localMove === 0 && pitchClasses.includes(refs[idx] % 12)) localCost -= 20;
-                    if (idx > 0) {
-                        const spacing = note - current[idx - 1];
-                        if (spacing < 3) continue;
-                        if (spacing > 9) localCost += (spacing - 9) * 8;
-                    }
-                    current[idx] = note;
-                    search(idx + 1, runningCost + localCost);
-                }
-            };
+        voice.osc.type = preset.type || 'triangle';
+        voice.filter.type = preset.highpass ? 'highpass' : 'lowpass';
+        voice.filter.frequency.setTargetAtTime(preset.filter || 2000, now, 0.03);
 
-            search(0, 0);
-        });
+        if (hasVoice) {
+            const det = ((preset.detune || 0) * 0.18) + voice.detuneBase;
+            voice.osc.detune.setTargetAtTime(det, now, 0.03);
+            
+            // JAVÍTÁS: Simább frekvencia váltás
+            voice.osc.frequency.cancelScheduledValues(now);
+            voice.osc.frequency.setValueAtTime(voice.osc.frequency.value, now);
+            voice.osc.frequency.exponentialRampToValueAtTime(freq, now + glideTime);
 
-        if (!bestVoicing) bestVoicing = refs.slice();
-        this.previousVoicing = bestVoicing.slice();
-        return bestVoicing.map(midi => this.midiToFreq(midi));
-    }
-
-    getVoicedFrequencies(rootIndex, type) {
-        const pitchClasses = this.getChordPitchClasses(rootIndex, type);
-        return this.chooseBestVoicing(pitchClasses);
-    }
-
-    playChord(rootIndex, type) {
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const preset = CHORD_PRESETS[this.params.chordTone] || CHORD_PRESETS.mellotron;
-        const freqs = this.getVoicedFrequencies(rootIndex, type);
-        const attackTime = Math.max(0.01, preset.attack || 0.06);
-        const glideTime = Math.min(0.06, Math.max(0.02, attackTime * 0.5));
-        const targetGain = Math.min(0.18, 0.2 / Math.max(1, freqs.length));
-
-        this.voices.forEach((voice, idx) => {
-            const freq = freqs[idx];
-            const hasVoice = typeof freq === 'number' && Number.isFinite(freq);
-
-            voice.osc.type = preset.type || 'triangle';
-            voice.filter.type = preset.highpass ? 'highpass' : 'lowpass';
-            voice.filter.frequency.setTargetAtTime(preset.filter || 2000, now, 0.03);
-
-            if (hasVoice) {
-                const det = ((preset.detune || 0) * 0.18) + voice.detuneBase;
-                voice.osc.detune.setTargetAtTime(det, now, 0.03);
-                voice.osc.frequency.cancelScheduledValues(now);
-                voice.osc.frequency.setTargetAtTime(freq, now, glideTime);
-
-                voice.subOsc.frequency.cancelScheduledValues(now);
-                voice.subOsc.frequency.setTargetAtTime(freq / 2, now, glideTime);
-                voice.subGain.gain.setTargetAtTime(preset.sub ? 0.14 : 0.0, now, 0.04);
-                voice.gain.gain.setTargetAtTime(targetGain, now, Math.max(0.015, attackTime * 0.45));
-            } else {
-                voice.gain.gain.setTargetAtTime(0.0001, now, 0.04);
-                voice.subGain.gain.setTargetAtTime(0.0, now, 0.04);
-            }
-        });
-    }
-
-    stopAll() {
-        const now = this.ctx.currentTime;
-        this.voices.forEach(v => {
-            v.gain.gain.setTargetAtTime(0.0001, now, 0.035);
-            v.subGain.gain.setTargetAtTime(0.0, now, 0.035);
-        });
-    }
-
-    playDrum(type) {
-        const now = this.ctx.currentTime;
-        const vol = 1.0; 
-        
-        if (type === 1) { // Kick
-            const osc = this.ctx.createOscillator();
-            const g = this.ctx.createGain();
-            osc.frequency.setValueAtTime(150, now);
-            osc.frequency.exponentialRampToValueAtTime(45, now + 0.15);
-            g.gain.setValueAtTime(0.0001, now);
-            g.gain.exponentialRampToValueAtTime(vol, now + 0.005);
-            g.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-            osc.connect(g);
-            g.connect(this.bus.drum);
-            osc.start(now);
-            osc.stop(now + 0.4);
-        } else if (type === 2) { // Snare
-            const noise = this.ctx.createBufferSource();
-            noise.buffer = this.noiseBuffers.snare || this.createNoiseBuffer(0.15, 0.8);
-            const f = this.ctx.createBiquadFilter();
-            f.type = "bandpass"; f.frequency.value = 2500; f.Q.value = 0.5;
-            const g = this.ctx.createGain();
-            g.gain.setValueAtTime(vol * 0.9, now);
-            g.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-            noise.connect(f); f.connect(g); g.connect(this.bus.drum);
-            noise.start(now);
-        } else if (type >= 3) { // Hat
-            const noise = this.ctx.createBufferSource();
-            noise.buffer = this.noiseBuffers.hat || this.createNoiseBuffer(0.05, 0.5);
-            const f = this.ctx.createBiquadFilter();
-            f.type = "highpass"; f.frequency.value = 7000;
-            const g = this.ctx.createGain();
-            const dur = type===3 ? 0.05 : 0.15;
-            g.gain.setValueAtTime(type===3 ? 0.3 : 0.2, now);
-            g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-            noise.connect(f); f.connect(g); g.connect(this.bus.drum);
-            noise.start(now);
-        }
-    }
-
-    toggleRecord() {
-        if (this.recorder && this.recorder.state === 'recording') {
-            this.recorder.stop();
-            return false;
+            voice.subOsc.frequency.cancelScheduledValues(now);
+            voice.subOsc.frequency.setValueAtTime(voice.subOsc.frequency.value, now);
+            voice.subOsc.frequency.exponentialRampToValueAtTime(freq / 2, now + glideTime);
+            
+            voice.subGain.gain.setTargetAtTime(preset.sub ? 0.14 : 0.0, now, 0.04);
+            
+            // JAVÍTÁS: Exponenciális attack envelope
+            voice.gain.gain.cancelScheduledValues(now);
+            voice.gain.gain.setValueAtTime(0.0001, now);
+            voice.gain.gain.exponentialRampToValueAtTime(targetGain, now + attackTime);
         } else {
-            this.chunks = [];
-            this.recorder = new MediaRecorder(this.dest.stream);
-            this.recorder.ondataavailable = e => this.chunks.push(e.data);
-            this.recorder.onstop = e => {
-                const blob = new Blob(this.chunks, { type: 'audio/webm' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `lofi-chord-session-${Date.now()}.webm`;
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => URL.revokeObjectURL(url), 100);
-            };
-            this.recorder.start();
-            return true;
+            voice.gain.gain.setTargetAtTime(0.0001, now, 0.04);
+            voice.subGain.gain.setTargetAtTime(0.0, now, 0.04);
         }
-    }
-}
+    });
+};
 
+AudioEngine.stopAll = function() {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const preset = CHORD_PRESETS[this.params.chordTone] || CHORD_PRESETS.mellotron;
+    const releaseTime = preset.release || 0.4;
+    
+    this.voices.forEach(v => {
+        v.gain.gain.cancelScheduledValues(now);
+        v.gain.gain.setValueAtTime(v.gain.gain.value, now);
+        v.gain.gain.exponentialRampToValueAtTime(0.0001, now + releaseTime);
+        
+        v.subGain.gain.cancelScheduledValues(now);
+        v.subGain.gain.setValueAtTime(v.subGain.gain.value, now);
+        v.subGain.gain.exponentialRampToValueAtTime(0.0001, now + releaseTime);
+    });
+};
+
+AudioEngine.playDrum = function(type) {
+    const now = this.ctx.currentTime;
+    const vol = 1.0; 
+    
+    if (type === 1) { // Kick
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(45, now + 0.15);
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.exponentialRampToValueAtTime(vol, now + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(g);
+        g.connect(this.bus.drum);
+        osc.start(now);
+        osc.stop(now + 0.4);
+    } else if (type === 2) { // Snare
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this.noiseBuffers.snare || this.createNoiseBuffer(0.15, 0.8);
+        const f = this.ctx.createBiquadFilter();
+        f.type = "bandpass"; f.frequency.value = 2500; f.Q.value = 0.5;
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(vol * 0.9, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        noise.connect(f); f.connect(g); g.connect(this.bus.drum);
+        noise.start(now);
+    } else if (type >= 3) { // Hat
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this.noiseBuffers.hat || this.createNoiseBuffer(0.05, 0.5);
+        const f = this.ctx.createBiquadFilter();
+        f.type = "highpass"; f.frequency.value = 7000;
+        const g = this.ctx.createGain();
+        const dur = type===3 ? 0.05 : 0.15;
+        g.gain.setValueAtTime(type===3 ? 0.3 : 0.2, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        noise.connect(f); f.connect(g); g.connect(this.bus.drum);
+        noise.start(now);
+    }
+};
+
+AudioEngine.toggleRecord = function() {
+    if (!this.recorder) {
+        this.recorder = new MediaRecorder(this.dest.stream);
+        this.chunks = [];
+        this.recorder.ondataavailable = (e) => this.chunks.push(e.data);
+        this.recorder.onstop = () => {
+            const blob = new Blob(this.chunks, { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'chords-recording.webm';
+            a.click();
+        };
+        this.recorder.start();
+        return true;
+    } else {
+        this.recorder.stop();
+        this.recorder = null;
+        return false;
+    }
+};
+
+/* --- APP LOGIC --- */
 const app = {
-    audio: new AudioEngine(),
-    state: { key: 0, bpm: 90, drumOn: false, hold: false, currentPattern: 'pop' },
+    audio: AudioEngine,
+    state: {
+        key: 0,
+        hold: false,
+        drumOn: false,
+        bpm: 90,
+        currentPattern: 'pop'
+    },
     intervalId: null,
 
     init() {
         this.audio.init();
-        this.populateSelects();
+        this.populateSelectors();
+        this.setupKnobs();
         this.renderGrid();
         this.bindEvents();
-        this.setupKnobs();
-        
-        // Ensure AudioContext is inited on first interaction
-        const resumeAudio = () => {
-            if (this.audio.ctx && this.audio.ctx.state === 'suspended') {
-                this.audio.ctx.resume();
-            }
-            document.removeEventListener('click', resumeAudio);
-            document.removeEventListener('touchstart', resumeAudio);
-        };
-        document.addEventListener('click', resumeAudio);
-        document.addEventListener('touchstart', resumeAudio);
     },
 
-    populateSelects() {
+    populateSelectors() {
         const keySel = document.getElementById('key-select');
         NOTES.forEach((n, i) => {
             const opt = document.createElement('option');
-            opt.value = i; opt.text = n;
+            opt.value = i;
+            opt.text = n;
             keySel.appendChild(opt);
         });
 
@@ -988,11 +1015,10 @@ const app = {
             };
             updateVisuals(val);
 
+            // Inicializálás
             if (param === 'drumVol') this.audio.setVol('drum', val);
             if (param === 'chordVol') this.audio.setVol('chord', val);
-            if (param === 'bpm') {
-                this.state.bpm = Math.round(val);
-            }
+            if (param === 'bpm') this.state.bpm = Math.round(val);
             if (param === 'fxReverb') this.audio.setEffectAmount('reverb', val);
             if (param === 'fxDistortion') this.audio.setEffectAmount('distortion', val);
             if (param === 'fxTremolo') this.audio.setEffectAmount('tremolo', val);
@@ -1056,19 +1082,20 @@ const app = {
                 const noteName = NOTES[nIdx];
                 const q = r.quals[cIdx];
                 
-                // Modified Notation: "maj7" -> "∆7", "m7b5" -> "ø"
                 let dispQ = q.replace('M', '').replace('dim', '°').replace('aug', '+');
                 if(q === 'M7') dispQ = '∆7';
                 if(q === 'm7b5') dispQ = 'ø';
                 
                 const btn = document.createElement('div');
                 btn.className = `chord-btn ${r.css}`;
-                // CHANGED: Roman numerals to neon-orange
                 const roman = (rIdx === 3) ? `<span class="opacity-80 text-[11px] mb-0.5 font-medium" style="color: var(--neon-orange);">${ROMAN_MAJ[cIdx]}</span>` : '';
                 btn.innerHTML = `${roman}<span class="font-bold">${noteName}${dispQ}</span>`;
                 
                 const chordType = CHORD_QUALITY_MAP[q] || 'maj';
-                const trigger = (e) => { e.preventDefault(); this.triggerChord(btn, nIdx, chordType); };
+                const trigger = (e) => { 
+                    e.preventDefault(); 
+                    this.triggerChord(btn, nIdx, chordType); 
+                };
                 btn.onpointerdown = trigger;
                 btn.onpointerup = () => { if (!this.state.hold) this.stopChord(btn); };
                 btn.onpointerleave = () => { if (!this.state.hold && btn.classList.contains('active')) this.stopChord(btn); };
@@ -1103,9 +1130,17 @@ const app = {
     },
 
     bindEvents() {
+        // JAVÍTÁS: Haptikus visszajelzés kikapcsolása
         document.addEventListener('contextmenu', (e) => {
             if (e.target.closest('button, .chord-btn, .knob-container')) e.preventDefault();
         });
+        
+        // JAVÍTÁS: Haptikus visszajelzés tiltása chord gombokon
+        document.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.chord-btn')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
 
         document.getElementById('key-select').onchange = (e) => {
             this.state.key = parseInt(e.target.value, 10);
@@ -1113,21 +1148,38 @@ const app = {
             this.renderGrid();
         };
 
-        document.getElementById('chord-tone-select').onchange = (e) => this.audio.params.chordTone = e.target.value;
-        document.getElementById('rhythm-select').onchange = (e) => this.state.currentPattern = e.target.value;
+        // JAVÍTÁS: Hangszín váltásnál NEM nullázunk le semmit
+        document.getElementById('chord-tone-select').onchange = (e) => {
+            this.audio.params.chordTone = e.target.value;
+        };
+
+        // JAVÍTÁS: Ritmus váltás menet közben is működik
+        document.getElementById('rhythm-select').onchange = (e) => {
+            this.state.currentPattern = e.target.value;
+            // Ha a dob fut, újraindítjuk az új ritmussal
+            if(this.state.drumOn) {
+                this.startDrum();
+            }
+        };
 
         const playBtn = document.getElementById('drum-btn');
         playBtn.onclick = () => {
             this.state.drumOn = !this.state.drumOn;
             playBtn.classList.toggle('play-active');
-            if(this.state.drumOn) this.startDrum(); else clearInterval(this.intervalId);
+            if(this.state.drumOn) {
+                this.startDrum();
+            } else {
+                clearInterval(this.intervalId);
+            }
         };
 
         const hBtn = document.getElementById('hold-btn');
         hBtn.onclick = () => {
             this.state.hold = !this.state.hold;
             hBtn.classList.toggle('btn-hold-active');
-            if(!this.state.hold) this.audio.stopAll();
+            if(!this.state.hold) {
+                this.audio.stopAll();
+            }
         };
 
         const rBtn = document.getElementById('rec-btn');
