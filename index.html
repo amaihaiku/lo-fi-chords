@@ -384,20 +384,24 @@
         <p class="text-gray-400 font-light font-outfit">Az alkalmazás csak fekvő módban használható!</p>
     </div>
 
-    <!-- Header - MAGASSÁG NÖVELVE (h-20) és IGAZÍTÁS JAVÍTVA -->
+    <!-- Header - Layout Adjusted for BPM Spacing and Key Alignment -->
     <header class="glass-panel px-3 py-2 flex items-center justify-between shrink-0 h-20 z-20 transition-all">
-        <!-- Left: Controls -->
-        <div class="flex items-center gap-3">
-            <div class="flex items-center gap-3">
-                <!-- Theme Trigger: ID added for JS -->
-                <h1 id="app-title" class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit cursor-pointer select-none hover:opacity-80 transition-opacity" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">CHORDS</h1>
-                
-                <div class="flex flex-col items-center justify-center">
-                    <select id="key-select" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 outline-none text-xs text-center focus:border-neon-blue transition-colors w-16"></select>
-                    <span class="ui-label text-[10px] mt-0.5">HANGNEM</span>
-                </div>
-            </div>
+        <!-- Left: Controls (Title + Key) -->
+        <div class="flex items-center gap-4">
+            <h1 id="app-title" class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit cursor-pointer select-none hover:opacity-80 transition-opacity" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">CHORDS</h1>
             
+            <!-- Key Select Container - Fixed height to match knob stack for alignment -->
+            <div class="flex flex-col items-center justify-between h-[66px]">
+                <div class="flex-1 flex items-center justify-center w-full">
+                    <select id="key-select" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 outline-none text-xs text-center focus:border-neon-blue transition-colors w-16 my-auto"></select>
+                </div>
+                <span class="ui-label text-[10px]">HANGNEM</span>
+            </div>
+        </div>
+
+        <!-- Center: Mixer (BPM + Knobs) - justify-evenly ensures equal spacing -->
+        <div class="flex flex-1 items-center justify-evenly px-4">
+            <!-- BPM - Moved here for even spacing -->
             <div class="flex flex-col items-center">
                 <div class="knob-container knob-sm knob-blue" data-param="bpm" data-min="40" data-max="200" data-val="90">
                     <div class="knob-circle"><div class="knob-indicator"></div></div>
@@ -405,10 +409,7 @@
                 <div class="knob-scale"><span>40</span><span>200</span></div>
                 <span class="ui-label text-[10px] mt-0 font-bold text-blue-400">BPM</span>
             </div>
-        </div>
 
-        <!-- Header Mixer - ELVÁLASZTÓ TÖRÖLVE, JOBBRA TOLVA (ml-10) -->
-        <div class="flex flex-1 items-center justify-evenly ml-10">
             <!-- DRUM -->
             <div class="flex flex-col items-center">
                 <div class="knob-container knob-sm knob-red" data-param="drumVol" data-min="0" data-max="100" data-val="50">
