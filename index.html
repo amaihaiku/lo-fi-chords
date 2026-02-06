@@ -239,20 +239,21 @@
     <header class="glass-panel px-3 py-1 flex items-center justify-between shrink-0 h-16 z-20">
         <!-- Left: Controls -->
         <div class="flex items-center gap-3">
-            <h1 class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit mr-1" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">CHORDS</h1>
-            
-            <div class="flex flex-col items-center justify-center">
-                <select id="key-select" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 outline-none text-xs text-center focus:border-neon-blue transition-colors w-16"></select>
-                <span class="ui-label text-[10px] mt-0.5">HANGNEM</span>
-            </div>
             <div class="flex items-center gap-3">
-                <div class="flex flex-col items-center">
-                    <div class="knob-container knob-sm knob-blue" data-param="bpm" data-min="40" data-max="200" data-val="90">
-                        <div class="knob-circle"><div class="knob-indicator"></div></div>
-                    </div>
-                    <div class="knob-scale"><span>40</span><span>200</span></div>
-                    <span class="ui-label text-[10px] mt-0 font-bold text-blue-400">BPM</span>
+                <h1 class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">CHORDS</h1>
+                
+                <div class="flex flex-col items-center justify-center">
+                    <select id="key-select" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 outline-none text-xs text-center focus:border-neon-blue transition-colors w-16"></select>
+                    <span class="ui-label text-[10px] mt-0.5">HANGNEM</span>
                 </div>
+            </div>
+            
+            <div class="flex flex-col items-center">
+                <div class="knob-container knob-sm knob-blue" data-param="bpm" data-min="40" data-max="200" data-val="90">
+                    <div class="knob-circle"><div class="knob-indicator"></div></div>
+                </div>
+                <div class="knob-scale"><span>40</span><span>200</span></div>
+                <span class="ui-label text-[10px] mt-0 font-bold text-blue-400">BPM</span>
             </div>
         </div>
 
@@ -376,17 +377,33 @@ const CHORD_PRESETS = {
     tapeChoir:   { name: 'Tape Choir',   type: 'triangle', filter: 1500, attack: 0.12, detune: 6,             release: 0.66 },
     softBrass:   { name: 'Soft Brass',   type: 'sawtooth', filter: 2100, attack: 0.06, detune: 4,             release: 0.44 },
     celestaPad:  { name: 'Celesta Pad',  type: 'sine',     filter: 3400, attack: 0.04, detune: 2, fm: true,   fmIndex: 4,  release: 0.48 },
-    nylonKeys:   { name: 'Nylon Keys',   type: 'triangle', filter: 2400, attack: 0.03, detune: 3,             release: 0.4  }
+    nylonKeys:   { name: 'Nylon Keys',   type: 'triangle', filter: 2400, attack: 0.03, detune: 3,             release: 0.4  },
+    silkPad:     { name: 'Silk Pad',     type: 'sine',     filter: 1800, attack: 0.20, detune: 3, sub: true,  release: 0.8  },
+    dreamPad:    { name: 'Dream Pad',    type: 'triangle', filter: 2000, attack: 0.25, detune: 5,             release: 0.9  },
+    velvetKeys:  { name: 'Velvet Keys',  type: 'sine',     filter: 2800, attack: 0.05, detune: 1.5,           release: 0.5  }
 };
 
 const DRUM_PATTERNS = {
-    'pop':   { name: 'Standard Pop', pat: [1,0,3,0, 2,0,3,0, 1,0,3,0, 2,0,3,0] },
-    'disco': { name: 'Disco', pat: [1,0,1,0, 2,0,1,0, 1,0,1,0, 2,0,1,0] },
-    'blues': { name: 'Blues Shuffle', pat: [1,0,0,2, 0,0,1,0, 0,2,0,1, 0,0,0,0] },
-    'techno':{ name: 'Techno', pat: [1,0,2,0, 1,0,2,0, 1,0,2,0, 1,0,2,0] },
-    'funk':  { name: 'Funk', pat: [1,0,3,1, 2,3,0,1, 0,3,0,2, 0,3,1,0] },
-    'dnb':   { name: 'Drum & Bass', pat: [1,0,0,0, 2,0,1,0, 0,0,2,0, 0,1,0,0] },
-    'trap':  { name: 'Trap', pat: [1,0,0,3, 0,3,2,0, 3,0,3,0, 2,0,3,3] }
+    'pop':       { name: 'Standard Pop', pat: [1,0,3,0, 2,0,3,0, 1,0,3,0, 2,0,3,0] },
+    'disco':     { name: 'Disco', pat: [1,0,1,0, 2,0,1,0, 1,0,1,0, 2,0,1,0] },
+    'blues':     { name: 'Blues Shuffle', pat: [1,0,0,2, 0,0,1,0, 0,2,0,1, 0,0,0,0] },
+    'techno':    { name: 'Techno', pat: [1,0,2,0, 1,0,2,0, 1,0,2,0, 1,0,2,0] },
+    'funk':      { name: 'Funk', pat: [1,0,3,1, 2,3,0,1, 0,3,0,2, 0,3,1,0] },
+    'dnb':       { name: 'Drum & Bass', pat: [1,0,0,0, 2,0,1,0, 0,0,2,0, 0,1,0,0] },
+    'trap':      { name: 'Trap', pat: [1,0,0,3, 0,3,2,0, 3,0,3,0, 2,0,3,3] },
+    'waltz':     { name: 'Waltz 3/4', pat: [1,0,0,0, 2,3,0,0, 2,3,0,0, 0,0,0,0] },
+    'jazzwaltz': { name: 'Jazz Waltz', pat: [1,0,0,3, 2,0,3,0, 2,3,0,3, 0,0,0,0] },
+    'swing':     { name: 'Swing', pat: [1,0,3,2, 0,3,1,0, 3,2,0,3, 1,0,3,0] },
+    'bossa':     { name: 'Bossa Nova', pat: [1,0,3,1, 2,0,3,0, 1,3,0,2, 0,3,0,0] },
+    'samba':     { name: 'Samba', pat: [1,3,2,3, 1,3,2,3, 1,3,2,3, 1,3,2,3] },
+    'reggae':    { name: 'Reggae', pat: [0,0,1,0, 2,3,0,0, 0,0,1,0, 2,3,0,0] },
+    'house':     { name: 'House', pat: [1,3,2,3, 1,3,2,3, 1,3,2,3, 1,3,2,3] },
+    'garage':    { name: 'UK Garage', pat: [1,0,0,3, 2,3,0,0, 1,3,0,0, 2,0,3,3] },
+    'halftime':  { name: 'Halftime', pat: [1,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,0,0] },
+    'tresillo':  { name: 'Tresillo', pat: [1,0,0,2, 0,0,1,0, 0,2,0,0, 0,0,0,0] },
+    'afrobeat':  { name: 'Afrobeat', pat: [1,3,0,3, 2,0,3,1, 0,3,2,0, 3,1,0,3] },
+    'breakbeat': { name: 'Breakbeat', pat: [1,0,3,0, 2,3,1,3, 0,3,2,0, 3,0,1,3] },
+    'moombah':   { name: 'Moombahton', pat: [1,0,0,0, 2,0,0,3, 1,0,3,0, 2,0,3,0] }
 };
 
 const CHORDS_MAP = {
@@ -837,41 +854,71 @@ AudioEngine.playChord = function(rootIndex, type) {
     const preset = CHORD_PRESETS[this.params.chordTone] || CHORD_PRESETS.mellotron;
     const freqs = this.getVoicedFrequencies(rootIndex, type);
     
-    // JAVÍTÁS: Simább hangindítás
-    const attackTime = Math.max(0.015, preset.attack || 0.06);
-    const glideTime = 0.04; // Rövidebb glide
+    // MOBIL OPTIMALIZÁLÁS: Még rövidebb attack és glide
+    const attackTime = Math.max(0.02, preset.attack || 0.06);
+    const glideTime = 0.03; // Nagyon rövid glide mobil eszközökön
     const targetGain = Math.min(0.16, 0.18 / Math.max(1, freqs.length));
 
     this.voices.forEach((voice, idx) => {
         const freq = freqs[idx];
         const hasVoice = typeof freq === 'number' && Number.isFinite(freq);
 
+        // Preset alkalmazása
         voice.osc.type = preset.type || 'triangle';
         voice.filter.type = preset.highpass ? 'highpass' : 'lowpass';
-        voice.filter.frequency.setTargetAtTime(preset.filter || 2000, now, 0.03);
+        
+        // Filter simán változik
+        const currentFilterFreq = voice.filter.frequency.value;
+        const targetFilterFreq = preset.filter || 2000;
+        voice.filter.frequency.cancelScheduledValues(now);
+        voice.filter.frequency.setValueAtTime(currentFilterFreq, now);
+        voice.filter.frequency.linearRampToValueAtTime(targetFilterFreq, now + 0.05);
 
         if (hasVoice) {
             const det = ((preset.detune || 0) * 0.18) + voice.detuneBase;
-            voice.osc.detune.setTargetAtTime(det, now, 0.03);
+            voice.osc.detune.cancelScheduledValues(now);
+            voice.osc.detune.setValueAtTime(det, now);
             
-            // JAVÍTÁS: Simább frekvencia váltás
+            // KRITIKUS: Frekvencia váltás optimalizálása
+            const currentFreq = voice.osc.frequency.value;
             voice.osc.frequency.cancelScheduledValues(now);
-            voice.osc.frequency.setValueAtTime(voice.osc.frequency.value, now);
-            voice.osc.frequency.exponentialRampToValueAtTime(freq, now + glideTime);
+            voice.osc.frequency.setValueAtTime(currentFreq, now);
+            
+            // Ha kis a frekvencia különbség, exponenciális, ha nagy, linear
+            const freqDiff = Math.abs(freq - currentFreq);
+            if (freqDiff < 100) {
+                voice.osc.frequency.exponentialRampToValueAtTime(freq, now + glideTime);
+            } else {
+                voice.osc.frequency.linearRampToValueAtTime(freq, now + glideTime);
+            }
 
+            // Sub oszcillátor
+            const currentSubFreq = voice.subOsc.frequency.value;
             voice.subOsc.frequency.cancelScheduledValues(now);
-            voice.subOsc.frequency.setValueAtTime(voice.subOsc.frequency.value, now);
-            voice.subOsc.frequency.exponentialRampToValueAtTime(freq / 2, now + glideTime);
+            voice.subOsc.frequency.setValueAtTime(currentSubFreq, now);
+            if (freqDiff < 100) {
+                voice.subOsc.frequency.exponentialRampToValueAtTime(freq / 2, now + glideTime);
+            } else {
+                voice.subOsc.frequency.linearRampToValueAtTime(freq / 2, now + glideTime);
+            }
             
-            voice.subGain.gain.setTargetAtTime(preset.sub ? 0.14 : 0.0, now, 0.04);
+            voice.subGain.gain.cancelScheduledValues(now);
+            voice.subGain.gain.setValueAtTime(voice.subGain.gain.value, now);
+            voice.subGain.gain.linearRampToValueAtTime(preset.sub ? 0.14 : 0.0, now + 0.04);
             
-            // JAVÍTÁS: Exponenciális attack envelope
+            // KRITIKUS: Gain envelope optimalizálása
+            const currentGain = voice.gain.gain.value;
             voice.gain.gain.cancelScheduledValues(now);
-            voice.gain.gain.setValueAtTime(0.0001, now);
-            voice.gain.gain.exponentialRampToValueAtTime(targetGain, now + attackTime);
+            voice.gain.gain.setValueAtTime(currentGain < 0.001 ? 0.001 : currentGain, now);
+            voice.gain.gain.linearRampToValueAtTime(targetGain, now + attackTime);
         } else {
-            voice.gain.gain.setTargetAtTime(0.0001, now, 0.04);
-            voice.subGain.gain.setTargetAtTime(0.0, now, 0.04);
+            voice.gain.gain.cancelScheduledValues(now);
+            voice.gain.gain.setValueAtTime(voice.gain.gain.value, now);
+            voice.gain.gain.linearRampToValueAtTime(0.0001, now + 0.04);
+            
+            voice.subGain.gain.cancelScheduledValues(now);
+            voice.subGain.gain.setValueAtTime(voice.subGain.gain.value, now);
+            voice.subGain.gain.linearRampToValueAtTime(0.0, now + 0.04);
         }
     });
 };
@@ -880,16 +927,19 @@ AudioEngine.stopAll = function() {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const preset = CHORD_PRESETS[this.params.chordTone] || CHORD_PRESETS.mellotron;
-    const releaseTime = preset.release || 0.4;
+    const releaseTime = Math.min(0.5, preset.release || 0.4);
     
     this.voices.forEach(v => {
+        const currentGain = v.gain.gain.value;
+        const currentSubGain = v.subGain.gain.value;
+        
         v.gain.gain.cancelScheduledValues(now);
-        v.gain.gain.setValueAtTime(v.gain.gain.value, now);
-        v.gain.gain.exponentialRampToValueAtTime(0.0001, now + releaseTime);
+        v.gain.gain.setValueAtTime(currentGain < 0.001 ? 0.001 : currentGain, now);
+        v.gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
         
         v.subGain.gain.cancelScheduledValues(now);
-        v.subGain.gain.setValueAtTime(v.subGain.gain.value, now);
-        v.subGain.gain.exponentialRampToValueAtTime(0.0001, now + releaseTime);
+        v.subGain.gain.setValueAtTime(currentSubGain < 0.001 ? 0.001 : currentSubGain, now);
+        v.subGain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
     });
 };
 
@@ -1119,14 +1169,20 @@ const app = {
     },
 
     startDrum() {
-        if(this.intervalId) clearInterval(this.intervalId);
+        // Tiszta restart - NEM változtat hangerőn
+        if(this.intervalId) {
+            clearInterval(this.intervalId);
+        }
         let step = 0;
+        const intervalTime = (60000 / this.state.bpm) / 4;
         this.intervalId = setInterval(() => {
             const pat = DRUM_PATTERNS[this.state.currentPattern].pat;
             const sound = pat[step % 16];
-            if(sound > 0) this.audio.playDrum(sound);
+            if(sound > 0) {
+                this.audio.playDrum(sound);
+            }
             step++;
-        }, (60000 / this.state.bpm) / 4);
+        }, intervalTime);
     },
 
     bindEvents() {
