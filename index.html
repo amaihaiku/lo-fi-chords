@@ -7,9 +7,9 @@
     <!-- PWA Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Lo-Fi Chords">
+    <meta name="apple-mobile-web-app-title" content="Chords">
     <meta name="theme-color" content="#121214">
-    <title>Lo-Fi Chords</title>
+    <title>Chords</title>
 
     <!-- Manifest & Icons (Lyre) -->
     <link rel="manifest" href="manifest.webmanifest">
@@ -126,6 +126,8 @@
         /* Small Knob for Header */
         .knob-sm { width: 34px; height: 34px; }
         .knob-sm .knob-circle { border-width: 1px; }
+        .knob-bpm { width: 50px; height: 50px; }
+        .knob-scale-bpm { width: 50px; font-size: 9px; }
 
         .knob-blue { color: var(--neon-blue); }
         .knob-orange { color: var(--neon-orange); }
@@ -238,22 +240,22 @@
     </div>
 
     <!-- Header -->
-    <header class="glass-panel px-3 py-1 flex items-center justify-between shrink-0 h-16 z-20">
+    <header class="glass-panel px-3 py-1 flex items-center justify-between shrink-0 h-24 z-20">
         <!-- Left: Controls -->
-        <div class="flex items-center gap-4">
-            <h1 class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit hidden md:block" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">LO-FI CHORDS</h1>
+        <div class="flex items-center gap-2">
+            <h1 class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit hidden md:block" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">CHORDS</h1>
             
-            <div class="flex items-center gap-3 border-l border-gray-700 pl-3">
+            <div class="flex items-center gap-3">
                 <div class="flex flex-col">
                     <label class="ui-label mb-0.5">Hangnem</label>
                     <select id="key-select" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 outline-none text-xs focus:border-neon-blue transition-colors w-16"></select>
                 </div>
                 <div class="flex flex-col items-center">
                     <label class="ui-label mb-0.5">BPM</label>
-                    <div class="knob-container knob-sm knob-blue" data-param="bpm" data-min="40" data-max="200" data-val="90">
+                    <div class="knob-container knob-bpm knob-blue" data-param="bpm" data-min="40" data-max="200" data-val="90">
                         <div class="knob-circle"><div class="knob-indicator"></div></div>
                     </div>
-                    <div class="knob-scale"><span>40</span><span>200</span></div>
+                    <div class="knob-scale knob-scale-bpm"><span>40</span><span>200</span></div>
                     <div id="bpm-value" class="bpm-value">90</div>
                 </div>
             </div>
@@ -263,7 +265,7 @@
         <div class="flex flex-1 items-center justify-evenly border-l border-gray-700 pl-4 ml-2">
             <!-- DRUM -->
             <div class="flex flex-col items-center">
-                <div class="knob-container knob-sm knob-red" data-param="drumVol" data-min="0" data-max="100" data-val="80">
+                <div class="knob-container knob-sm knob-red" data-param="drumVol" data-min="0" data-max="100" data-val="50">
                     <div class="knob-circle"><div class="knob-indicator"></div></div>
                 </div>
                 <div class="knob-scale"><span>0</span><span>100</span></div>
@@ -271,7 +273,7 @@
             </div>
             <!-- CHORD -->
             <div class="flex flex-col items-center">
-                <div class="knob-container knob-sm knob-purple" data-param="chordVol" data-min="0" data-max="100" data-val="70">
+                <div class="knob-container knob-sm knob-purple" data-param="chordVol" data-min="0" data-max="100" data-val="50">
                     <div class="knob-circle"><div class="knob-indicator"></div></div>
                 </div>
                 <div class="knob-scale"><span>0</span><span>100</span></div>
@@ -279,7 +281,7 @@
             </div>
             <!-- REVERB -->
             <div class="flex flex-col items-center">
-                <div class="knob-container knob-sm knob-blue" data-param="fxReverb" data-min="0" data-max="100" data-val="32">
+                <div class="knob-container knob-sm knob-blue" data-param="fxReverb" data-min="0" data-max="100" data-val="0">
                     <div class="knob-circle"><div class="knob-indicator"></div></div>
                 </div>
                 <div class="knob-scale"><span>0</span><span>100</span></div>
@@ -287,7 +289,7 @@
             </div>
             <!-- DISTORTION -->
             <div class="flex flex-col items-center">
-                <div class="knob-container knob-sm knob-orange" data-param="fxDistortion" data-min="0" data-max="100" data-val="20">
+                <div class="knob-container knob-sm knob-orange" data-param="fxDistortion" data-min="0" data-max="100" data-val="0">
                     <div class="knob-circle"><div class="knob-indicator"></div></div>
                 </div>
                 <div class="knob-scale"><span>0</span><span>100</span></div>
@@ -295,7 +297,7 @@
             </div>
             <!-- TREMOLO -->
             <div class="flex flex-col items-center">
-                <div class="knob-container knob-sm knob-purple" data-param="fxTremolo" data-min="0" data-max="100" data-val="30">
+                <div class="knob-container knob-sm knob-purple" data-param="fxTremolo" data-min="0" data-max="100" data-val="0">
                     <div class="knob-circle"><div class="knob-indicator"></div></div>
                 </div>
                 <div class="knob-scale"><span>0</span><span>100</span></div>
@@ -353,7 +355,7 @@
 
 <script>
 /**
- * LO-FI CHORDS v3.2
+ * CHORDS v3.2
  */
 
 /* --- DATA --- */
@@ -433,15 +435,15 @@ class AudioEngine {
             filterFreq: 2000,
             detune: 15,
             masterVol: 0.5,
-            chordVol: 0.7,
-            drumVol: 0.8,
+            chordVol: 0.5,
+            drumVol: 0.5,
             chordTone: 'mellotron'
         };
 
         this.fxState = {
-            reverb: 32,
-            distortion: 20,
-            tremolo: 30
+            reverb: 0,
+            distortion: 0,
+            tremolo: 0
         };
         
         this.dest = null;
@@ -803,64 +805,61 @@ class AudioEngine {
         freqs.forEach((freq) => {
             const oscList = [];
             const gainList = [];
-            [-1, 1].forEach(panDir => {
-                const osc = this.ctx.createOscillator();
-                const vGain = this.ctx.createGain();
-                const panner = this.ctx.createStereoPanner();
-                
-                osc.type = preset.type;
-                let detune = (Math.random() - 0.5) * ((preset.detune || 5) * 0.35);
-                if (panDir === 1) detune += 0.8;
-                osc.detune.value = detune;
-                osc.frequency.value = freq;
-                this.lfoGain.connect(osc.detune);
+            const osc = this.ctx.createOscillator();
+            const vGain = this.ctx.createGain();
+            const panner = this.ctx.createStereoPanner();
+            
+            osc.type = preset.type;
+            let detune = (Math.random() - 0.5) * ((preset.detune || 5) * 0.3);
+            osc.detune.value = detune;
+            osc.frequency.value = freq;
+            this.lfoGain.connect(osc.detune);
 
-                if (preset.fm) {
-                    const mod = this.ctx.createOscillator();
-                    const modGain = this.ctx.createGain();
-                    mod.type = 'sine';
-                    mod.frequency.value = freq * 2.0;
-                    modGain.gain.value = (preset.fmIndex || 50);
-                    mod.connect(modGain);
-                    modGain.connect(osc.frequency);
-                    mod.start(now);
-                    oscList.push(mod); 
-                }
+            if (preset.fm) {
+                const mod = this.ctx.createOscillator();
+                const modGain = this.ctx.createGain();
+                mod.type = 'sine';
+                mod.frequency.value = freq * 2.0;
+                modGain.gain.value = (preset.fmIndex || 50);
+                mod.connect(modGain);
+                modGain.connect(osc.frequency);
+                mod.start(now);
+                oscList.push(mod); 
+            }
 
-                let sourceNode = osc;
-                if (preset.filter) {
-                    const localFilter = this.ctx.createBiquadFilter();
-                    localFilter.type = preset.highpass ? "highpass" : "lowpass";
-                    localFilter.frequency.value = preset.filter;
-                    sourceNode.connect(localFilter);
-                    localFilter.connect(vGain);
-                } else {
-                    sourceNode.connect(vGain);
-                }
+            let sourceNode = osc;
+            if (preset.filter) {
+                const localFilter = this.ctx.createBiquadFilter();
+                localFilter.type = preset.highpass ? "highpass" : "lowpass";
+                localFilter.frequency.value = preset.filter;
+                sourceNode.connect(localFilter);
+                localFilter.connect(vGain);
+            } else {
+                sourceNode.connect(vGain);
+            }
 
-                if (preset.sub) {
-                    const subOsc = this.ctx.createOscillator();
-                    subOsc.type = 'sine';
-                    subOsc.frequency.value = freq / 2;
-                    const subGain = this.ctx.createGain();
-                    subGain.gain.value = 0.4;
-                    subOsc.connect(subGain);
-                    subGain.connect(vGain); 
-                    subOsc.start(now);
-                    oscList.push(subOsc);
-                }
+            if (preset.sub) {
+                const subOsc = this.ctx.createOscillator();
+                subOsc.type = 'sine';
+                subOsc.frequency.value = freq / 2;
+                const subGain = this.ctx.createGain();
+                subGain.gain.value = 0.22;
+                subOsc.connect(subGain);
+                subGain.connect(vGain); 
+                subOsc.start(now);
+                oscList.push(subOsc);
+            }
 
-                vGain.connect(panner);
-                panner.connect(this.bus.chord);
-                panner.pan.value = panDir * 0.18;
+            vGain.connect(panner);
+            panner.connect(this.bus.chord);
+            panner.pan.value = (Math.random() - 0.5) * 0.22;
 
-                osc.start(now);
-                oscList.push(osc);
-                gainList.push(vGain);
+            osc.start(now);
+            oscList.push(osc);
+            gainList.push(vGain);
 
-                vGain.gain.setValueAtTime(0.0001, now);
-                vGain.gain.exponentialRampToValueAtTime(targetGain, now + attackTime);
-            });
+            vGain.gain.setValueAtTime(0.0001, now);
+            vGain.gain.exponentialRampToValueAtTime(targetGain, now + attackTime);
             this.activeVoices.push({ osc: oscList, gains: gainList, state: 'playing' });
         });
     }
@@ -952,6 +951,7 @@ const app = {
     intervalId: null,
 
     init() {
+        this.audio.init();
         this.populateSelects();
         this.renderGrid();
         this.bindEvents();
@@ -961,17 +961,12 @@ const app = {
         const resumeAudio = () => {
             if (this.audio.ctx && this.audio.ctx.state === 'suspended') {
                 this.audio.ctx.resume();
-            } else if (!this.audio.ctx) {
-                this.audio.init();
             }
             document.removeEventListener('click', resumeAudio);
             document.removeEventListener('touchstart', resumeAudio);
         };
         document.addEventListener('click', resumeAudio);
         document.addEventListener('touchstart', resumeAudio);
-        
-        // Initial init call
-        this.audio.init();
     },
 
     populateSelects() {
@@ -1167,8 +1162,14 @@ const app = {
         };
 
         document.getElementById('exit-btn').onclick = () => {
-            // Simulate power off / reload
-            window.location.reload();
+            try { window.close(); } catch (err) {}
+            try {
+                window.open('', '_self');
+                window.close();
+            } catch (err) {}
+            setTimeout(() => {
+                if (!document.hidden) window.location.replace('about:blank');
+            }, 120);
         };
     }
 };
