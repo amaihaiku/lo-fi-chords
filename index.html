@@ -11,8 +11,8 @@
     <meta name="theme-color" content="#121214">
     <title>Chords</title>
 
-    <!-- Manifest - Data URI Fullscreen Display -->
-    <link rel="manifest" href='data:application/manifest+json,{"display":"fullscreen","name":"Chords","short_name":"Chords","start_url":".","background_color":"#121214","theme_color":"#121214","orientation":"landscape"}'>
+    <!-- Manifest - Reverted to STANDALONE (Show Clock) -->
+    <link rel="manifest" href='data:application/manifest+json,{"display":"standalone","name":"Chords","short_name":"Chords","start_url":".","background_color":"#121214","theme_color":"#121214","orientation":"landscape"}'>
     
     <link rel="icon" type="image/svg+xml" href="lyre-icon.svg">
     <link rel="apple-touch-icon" href="lyre-icon.svg">
@@ -1390,21 +1390,6 @@ const app = {
     },
 
     bindEvents() {
-        // --- AUTO FULLSCREEN ON INTERACTION (Fix for hiding clock) ---
-        const goFullscreen = () => {
-            if (!document.fullscreenElement) {
-                try {
-                    document.documentElement.requestFullscreen().catch(e => {
-                        console.log("Fullscreen request failed (normal if not user gesture):", e);
-                    });
-                } catch(e) {}
-            }
-        };
-        // Trigger on first touch/click
-        document.body.addEventListener('click', goFullscreen, { once: true });
-        document.body.addEventListener('touchstart', goFullscreen, { once: true });
-
-
         // --- RETRO MODE TOGGLE ---
         const title = document.getElementById('app-title');
         title.addEventListener('click', () => {
