@@ -137,6 +137,66 @@
         .knob-purple .knob-indicator { background: var(--neon-purple); }
         .knob-red .knob-indicator { background: var(--neon-red); }
 
+        .fx-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .fx-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: rgba(17, 24, 39, 0.45);
+            border: 1px solid rgba(75, 85, 99, 0.6);
+            border-radius: 6px;
+            padding: 6px;
+        }
+
+        .fx-toggle {
+            height: 24px;
+            border-radius: 5px;
+            border: 1px solid #4b5563;
+            color: #d1d5db;
+            font-size: 10px;
+            letter-spacing: 0.06em;
+            background: #1f2937;
+            text-transform: uppercase;
+        }
+
+        .fx-toggle.fx-on {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+            box-shadow: 0 0 8px rgba(0, 255, 157, 0.35);
+            background: rgba(0, 255, 157, 0.12);
+        }
+
+        .fx-amount {
+            width: 100%;
+            accent-color: #00c3ff;
+            height: 14px;
+        }
+
+        .edge-exit {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 60;
+            width: 34px;
+            height: 74px;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            border: 1px solid rgba(127, 29, 29, 0.7);
+            border-right: none;
+            background: rgba(127, 29, 29, 0.2);
+            color: #f87171;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: -4px 0 14px rgba(0, 0, 0, 0.45);
+        }
+
         /* Chord Buttons */
         .chord-btn {
             transition: all 0.1s ease-out;
@@ -230,7 +290,7 @@
         <p class="text-gray-400 font-light font-outfit">Az alkalmazás csak fekvő módban használható!</p>
     </div>
 
-    <!-- Header (With Expanded Mixer including Sustain and Exit) -->
+    <!-- Header -->
     <header class="glass-panel px-3 py-1 flex items-center justify-between shrink-0 h-16 z-20">
         <!-- Left: Controls -->
         <div class="flex items-center gap-4">
@@ -245,18 +305,10 @@
                     <label class="ui-label mb-0.5">BPM</label>
                     <input type="number" id="bpm-input" value="90" min="40" max="200" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 text-center text-xs outline-none focus:border-neon-blue transition-colors">
                 </div>
-                <div class="flex flex-col w-12">
-                    <label class="ui-label mb-0.5">Oktáv</label>
-                    <select id="octave-select" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 outline-none text-xs text-center focus:border-neon-blue transition-colors">
-                        <option value="-1">-1</option>
-                        <option value="0" selected>0</option>
-                        <option value="1">+1</option>
-                    </select>
-                </div>
             </div>
         </div>
 
-        <!-- Header Mixer (Knobs + Exit) -->
+        <!-- Header Mixer -->
         <div class="flex flex-1 items-center justify-evenly border-l border-gray-700 pl-4 ml-2">
             <!-- DRUM -->
             <div class="flex flex-col items-center">
@@ -274,22 +326,6 @@
                 <div class="knob-scale"><span>0</span><span>100</span></div>
                 <span class="ui-label text-[10px] mt-0 font-bold text-purple-400">AKK</span>
             </div>
-            <!-- SUSTAIN (Moved here) -->
-            <div class="flex flex-col items-center">
-                <div class="knob-container knob-sm knob-orange" id="knob-sustain" data-param="sustain" data-min="0" data-max="100" data-val="30">
-                    <div class="knob-circle"><div class="knob-indicator"></div></div>
-                </div>
-                <div class="knob-scale"><span>0</span><span>100</span></div>
-                <span class="ui-label text-[10px] mt-0 font-bold text-neon-orange" style="color: var(--neon-orange);">SUS</span>
-            </div>
-            
-            <!-- EXIT BUTTON -->
-            <button id="exit-btn" class="power-btn w-8 h-8 rounded-full border border-red-900/50 flex items-center justify-center text-red-500 bg-red-900/10 hover:bg-red-900/30 transition-all shadow-lg">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-                    <line x1="12" y1="2" x2="12" y2="12"></line>
-                </svg>
-            </button>
         </div>
     </header>
 
@@ -308,13 +344,36 @@
             
             <!-- 1. Chord Tone -->
             <div class="flex flex-col gap-0.5 border-b border-gray-700/50 pb-2">
-                <label class="ui-label text-neon-purple">Akkord Hang</label>
+                <label class="ui-label text-neon-purple">Hangszinek</label>
                 <select id="chord-tone-select" class="bg-gray-800/50 border border-gray-600 rounded px-2 py-1 outline-none text-xs text-white w-full">
                     <!-- Populated by JS -->
                 </select>
             </div>
 
-            <!-- 2. Rhythm Control (Rectangular Button) -->
+            <!-- 2. Effects -->
+            <div class="flex flex-col gap-1.5 border-b border-gray-700/50 pb-2">
+                <label class="ui-label text-[10px]">Effektek</label>
+                <div class="fx-grid">
+                    <div class="fx-cell">
+                        <button class="fx-toggle" data-fx="reverb">Reverb</button>
+                        <input class="fx-amount" data-fx="reverb" type="range" min="0" max="100" value="32">
+                    </div>
+                    <div class="fx-cell">
+                        <button class="fx-toggle" data-fx="distortion">Distorsion</button>
+                        <input class="fx-amount" data-fx="distortion" type="range" min="0" max="100" value="20">
+                    </div>
+                    <div class="fx-cell">
+                        <button class="fx-toggle" data-fx="tremolo">Tremolo</button>
+                        <input class="fx-amount" data-fx="tremolo" type="range" min="0" max="100" value="30">
+                    </div>
+                    <div class="fx-cell">
+                        <button class="fx-toggle" data-fx="phaser">Phaser</button>
+                        <input class="fx-amount" data-fx="phaser" type="range" min="0" max="100" value="28">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Rhythm Control (Rectangular Button) -->
             <div class="flex flex-col gap-1.5 bg-gray-900/40 p-2 rounded border border-gray-700/50">
                 <div class="flex items-center justify-between">
                     <label class="ui-label text-[10px]">RITMUS</label>
@@ -327,7 +386,7 @@
                 </button>
             </div>
 
-            <!-- 3. Hold/Rec (Taller Buttons) -->
+            <!-- 4. Hold/Rec (Taller Buttons) -->
             <div class="flex gap-2 h-14">
                 <button id="hold-btn" class="flex-1 h-full bg-gray-800 rounded ui-label text-[10px] border border-gray-600 text-gray-300 transition-all shadow-md hover:bg-gray-700 tracking-wider">HOLD</button>
                 <button id="rec-btn" class="flex-1 h-full bg-gray-800 rounded ui-label text-[10px] border border-red-900/60 text-red-400 hover:bg-red-900/20 transition-all shadow-md tracking-wider">REC</button>
@@ -335,6 +394,12 @@
         </div>
 
     </main>
+    <button id="exit-btn" class="edge-exit power-btn" aria-label="Kilépés">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+            <line x1="12" y1="2" x2="12" y2="12"></line>
+        </svg>
+    </button>
 
 <script>
 /**
@@ -351,12 +416,16 @@ const SCALES = {
 };
 
 const CHORD_PRESETS = {
-    mellotron:   { name: 'Mellotron',   type: 'triangle', filter: 1800, attack: 0.08, detune: 4, sub: true, release: 0.65 },
-    epiano:      { name: 'E-Piano',     type: 'sine',     filter: 2600, attack: 0.02, detune: 2, fm: true, fmIndex: 8, release: 0.45 },
-    wurlitzer:   { name: 'Wurlitzer',   type: 'square',   filter: 2200, attack: 0.03, detune: 5, fm: true, fmIndex: 6, release: 0.5 },
-    fluteOrgan:  { name: 'Flute Organ', type: 'triangle', filter: 3000, attack: 0.06, detune: 1, sub: true, release: 0.8 },
-    warmPad:     { name: 'Warm Pad',    type: 'sawtooth', filter: 1400, attack: 0.2, detune: 7, release: 0.9 },
-    softStrings: { name: 'Soft Strings',type: 'triangle', filter: 1600, attack: 0.16, detune: 6, release: 0.85 }
+    mellotron:   { name: 'Mellotron',    type: 'triangle', filter: 1700, attack: 0.08, detune: 4, sub: true,  release: 0.52 },
+    epiano:      { name: 'E-Piano',      type: 'sine',     filter: 2600, attack: 0.02, detune: 2, fm: true,   fmIndex: 8,  release: 0.36 },
+    wurlitzer:   { name: 'Wurlitzer',    type: 'square',   filter: 2200, attack: 0.03, detune: 5, fm: true,   fmIndex: 6,  release: 0.34 },
+    fluteOrgan:  { name: 'Flute Organ',  type: 'triangle', filter: 3000, attack: 0.06, detune: 1, sub: true,  release: 0.58 },
+    jazzOrgan:   { name: 'Jazz Organ',   type: 'square',   filter: 3200, attack: 0.02, detune: 1, sub: true,  release: 0.42 },
+    analogPad:   { name: 'Analog Pad',   type: 'sawtooth', filter: 1300, attack: 0.16, detune: 8,             release: 0.7  },
+    tapeChoir:   { name: 'Tape Choir',   type: 'triangle', filter: 1500, attack: 0.12, detune: 6,             release: 0.66 },
+    softBrass:   { name: 'Soft Brass',   type: 'sawtooth', filter: 2100, attack: 0.06, detune: 4,             release: 0.44 },
+    celestaPad:  { name: 'Celesta Pad',  type: 'sine',     filter: 3400, attack: 0.04, detune: 2, fm: true,   fmIndex: 4,  release: 0.48 },
+    nylonKeys:   { name: 'Nylon Keys',   type: 'triangle', filter: 2400, attack: 0.03, detune: 3,             release: 0.4  }
 };
 
 const DRUM_PATTERNS = {
@@ -407,6 +476,9 @@ class AudioEngine {
         this.activeVoices = [];
         this.previousVoicing = null;
         this.noiseBuffers = { snare: null, hat: null };
+        this.voiceCount = 4;
+        this.fxNodes = {};
+        this.phaserBaseFreq = [340, 760, 1500, 2800];
         
         this.params = {
             filterFreq: 2000,
@@ -414,9 +486,14 @@ class AudioEngine {
             masterVol: 0.5,
             chordVol: 0.7,
             drumVol: 0.8,
-            chordTone: 'mellotron',
-            sustain: 0.6,
-            chordOctave: 0 
+            chordTone: 'mellotron'
+        };
+
+        this.fxState = {
+            reverb: { enabled: false, amount: 32 },
+            distortion: { enabled: false, amount: 20 },
+            tremolo: { enabled: false, amount: 30 },
+            phaser: { enabled: false, amount: 28 }
         };
         
         this.dest = null;
@@ -459,8 +536,11 @@ class AudioEngine {
         this.lfo.connect(this.lfoGain);
         this.lfo.start();
 
+        // --- CHORD FX CHAIN (chord only, drums bypass) ---
+        this.setupChordEffects();
+
         // ROUTING
-        this.bus.chord.connect(this.filter);
+        this.bus.chord.connect(this.fxNodes.distortion);
         this.bus.drum.connect(this.master);
 
         this.filter.connect(this.shaper);
@@ -484,15 +564,157 @@ class AudioEngine {
         if(type === 'drum') this.bus.drum.gain.setTargetAtTime(gain, this.ctx.currentTime, 0.05);
     }
 
-    setFilter(val) {
-        if(!this.ctx) return;
-        this.filter.frequency.setTargetAtTime(val, this.ctx.currentTime, 0.1);
+    setupChordEffects() {
+        const n = this.fxNodes;
+
+        n.distortion = this.ctx.createWaveShaper();
+        n.distortion.oversample = '4x';
+        n.distortionMakeup = this.ctx.createGain();
+
+        n.tremoloGain = this.ctx.createGain();
+        n.tremoloDepth = this.ctx.createGain();
+        n.tremoloLfo = this.ctx.createOscillator();
+        n.tremoloLfo.connect(n.tremoloDepth);
+        n.tremoloDepth.connect(n.tremoloGain.gain);
+        n.tremoloLfo.start();
+
+        n.phaserDry = this.ctx.createGain();
+        n.phaserWet = this.ctx.createGain();
+        n.phaserSum = this.ctx.createGain();
+        n.phaserStages = [0, 1, 2, 3].map(() => this.ctx.createBiquadFilter());
+        n.phaserStages.forEach(stage => { stage.type = 'allpass'; stage.Q.value = 0.7; });
+
+        n.phaserLfo = this.ctx.createOscillator();
+        n.phaserDepth = this.ctx.createGain();
+        n.phaserLfo.connect(n.phaserDepth);
+        n.phaserStages.forEach(stage => n.phaserDepth.connect(stage.frequency));
+        n.phaserLfo.start();
+
+        n.reverbConvolver = this.ctx.createConvolver();
+        n.reverbConvolver.buffer = this.createReverbImpulse(2.8, 2.6);
+        n.reverbDry = this.ctx.createGain();
+        n.reverbWet = this.ctx.createGain();
+
+        n.distortion.connect(n.distortionMakeup);
+        n.distortionMakeup.connect(n.tremoloGain);
+
+        n.tremoloGain.connect(n.phaserDry);
+        n.phaserDry.connect(n.phaserSum);
+
+        n.tremoloGain.connect(n.phaserStages[0]);
+        n.phaserStages[0].connect(n.phaserStages[1]);
+        n.phaserStages[1].connect(n.phaserStages[2]);
+        n.phaserStages[2].connect(n.phaserStages[3]);
+        n.phaserStages[3].connect(n.phaserWet);
+        n.phaserWet.connect(n.phaserSum);
+
+        n.phaserSum.connect(n.reverbDry);
+        n.reverbDry.connect(this.filter);
+
+        n.phaserSum.connect(n.reverbConvolver);
+        n.reverbConvolver.connect(n.reverbWet);
+        n.reverbWet.connect(this.filter);
+
+        this.updateDistortion();
+        this.updateTremolo();
+        this.updatePhaser();
+        this.updateReverb();
     }
 
-    setDetune(val) {
-        if(!this.ctx) return;
-        this.lfoGain.gain.setTargetAtTime(val * 0.5, this.ctx.currentTime, 0.1);
-        this.params.detune = val;
+    setEffectEnabled(name, enabled) {
+        if (!this.fxState[name]) return;
+        this.fxState[name].enabled = enabled;
+        this.updateEffect(name);
+    }
+
+    setEffectAmount(name, amount) {
+        if (!this.fxState[name]) return;
+        this.fxState[name].amount = Math.max(0, Math.min(100, amount));
+        this.updateEffect(name);
+    }
+
+    updateEffect(name) {
+        if (!this.ctx) return;
+        if (name === 'distortion') this.updateDistortion();
+        if (name === 'tremolo') this.updateTremolo();
+        if (name === 'phaser') this.updatePhaser();
+        if (name === 'reverb') this.updateReverb();
+    }
+
+    updateDistortion() {
+        const n = this.fxNodes;
+        const state = this.fxState.distortion;
+        if (!n.distortion) return;
+        const amount = state.enabled ? state.amount : 0;
+        n.distortion.curve = amount > 0 ? this.createSoftClipCurve(amount) : this.createIdentityCurve();
+        n.distortionMakeup.gain.setTargetAtTime(1 - (amount / 450), this.ctx.currentTime, 0.05);
+    }
+
+    updateTremolo() {
+        const n = this.fxNodes;
+        const state = this.fxState.tremolo;
+        if (!n.tremoloGain) return;
+        const amount = state.enabled ? state.amount : 0;
+        const depth = (amount / 100) * 0.55;
+        n.tremoloGain.gain.setTargetAtTime(1 - (depth * 0.5), this.ctx.currentTime, 0.05);
+        n.tremoloDepth.gain.setTargetAtTime(depth, this.ctx.currentTime, 0.05);
+        n.tremoloLfo.frequency.setTargetAtTime(2 + (amount * 0.06), this.ctx.currentTime, 0.1);
+    }
+
+    updatePhaser() {
+        const n = this.fxNodes;
+        const state = this.fxState.phaser;
+        if (!n.phaserDry) return;
+        const amount = state.enabled ? state.amount : 0;
+        const wet = state.enabled ? (0.12 + (amount / 100) * 0.62) : 0;
+        n.phaserDry.gain.setTargetAtTime(1 - (wet * 0.55), this.ctx.currentTime, 0.05);
+        n.phaserWet.gain.setTargetAtTime(wet, this.ctx.currentTime, 0.05);
+        n.phaserDepth.gain.setTargetAtTime(state.enabled ? (140 + amount * 7) : 0, this.ctx.currentTime, 0.08);
+        n.phaserLfo.frequency.setTargetAtTime(0.06 + (amount * 0.004), this.ctx.currentTime, 0.08);
+        n.phaserStages.forEach((stage, idx) => {
+            stage.frequency.setTargetAtTime(this.phaserBaseFreq[idx], this.ctx.currentTime, 0.06);
+        });
+    }
+
+    updateReverb() {
+        const n = this.fxNodes;
+        const state = this.fxState.reverb;
+        if (!n.reverbDry) return;
+        const wet = state.enabled ? ((state.amount / 100) * 0.8) : 0;
+        n.reverbWet.gain.setTargetAtTime(wet, this.ctx.currentTime, 0.06);
+        n.reverbDry.gain.setTargetAtTime(1 - (wet * 0.45), this.ctx.currentTime, 0.06);
+    }
+
+    createSoftClipCurve(amount) {
+        const samples = 2048;
+        const curve = new Float32Array(samples);
+        const k = 2 + (amount * 1.5);
+        for (let i = 0; i < samples; i++) {
+            const x = ((i * 2) / samples) - 1;
+            curve[i] = Math.tanh(k * x) / Math.tanh(k);
+        }
+        return curve;
+    }
+
+    createIdentityCurve() {
+        const samples = 512;
+        const curve = new Float32Array(samples);
+        for (let i = 0; i < samples; i++) curve[i] = ((i * 2) / (samples - 1)) - 1;
+        return curve;
+    }
+
+    createReverbImpulse(seconds, decay) {
+        const length = Math.floor(this.ctx.sampleRate * seconds);
+        const impulse = this.ctx.createBuffer(2, length, this.ctx.sampleRate);
+        for (let ch = 0; ch < 2; ch++) {
+            const data = impulse.getChannelData(ch);
+            for (let i = 0; i < length; i++) {
+                const t = i / length;
+                const env = Math.pow(1 - t, decay);
+                data[i] = ((Math.random() * 2) - 1) * env;
+            }
+        }
+        return impulse;
     }
 
     updateCharacter(amount) {
@@ -524,78 +746,112 @@ class AudioEngine {
         return buffer;
     }
 
-    findNearestPitchClass(pc, refMidi, minMidi, maxMidi) {
-        const center = pc + (12 * Math.round((refMidi - pc) / 12));
-        const candidates = [center - 24, center - 12, center, center + 12, center + 24];
-
-        let best = center;
-        let bestDistance = Infinity;
-        candidates.forEach(candidate => {
-            if (candidate < minMidi || candidate > maxMidi) return;
-            const distance = Math.abs(candidate - refMidi);
-            if (distance < bestDistance) {
-                bestDistance = distance;
-                best = candidate;
-            }
-        });
-        if (!Number.isFinite(bestDistance)) best = Math.max(minMidi, Math.min(maxMidi, center));
-        return best;
+    getChordPitchClasses(rootIndex, type) {
+        const intervals = CHORDS_MAP[type] || CHORDS_MAP.maj;
+        const pcs = intervals.map(interval => (rootIndex + interval + 120) % 12);
+        if (pcs.length === 3) return [pcs[0], pcs[1], pcs[2], pcs[0]];
+        if (pcs.length > this.voiceCount) return pcs.slice(0, this.voiceCount);
+        if (pcs.length === this.voiceCount) return pcs;
+        while (pcs.length < this.voiceCount) pcs.push(pcs[0]);
+        return pcs;
     }
 
-    recenterVoicing(voicing, centerMidi) {
-        const result = voicing.slice();
-        if (!result.length) return result;
-        let avg = result.reduce((sum, note) => sum + note, 0) / result.length;
-        while (avg < centerMidi - 4) {
-            for (let i = 0; i < result.length; i++) result[i] += 12;
-            avg += 12;
+    getMidiCandidatesForPitchClass(pc, minMidi, maxMidi) {
+        const out = [];
+        for (let oct = -1; oct <= 10; oct++) {
+            const note = (oct * 12) + pc;
+            if (note >= minMidi && note <= maxMidi) out.push(note);
         }
-        while (avg > centerMidi + 4) {
-            for (let i = 0; i < result.length; i++) result[i] -= 12;
-            avg -= 12;
-        }
+        return out;
+    }
+
+    uniquePermutations(values) {
+        const result = [];
+        const used = new Array(values.length).fill(false);
+        const sorted = values.slice().sort((a, b) => a - b);
+        const walk = (path) => {
+            if (path.length === sorted.length) {
+                result.push(path.slice());
+                return;
+            }
+            for (let i = 0; i < sorted.length; i++) {
+                if (used[i]) continue;
+                if (i > 0 && sorted[i] === sorted[i - 1] && !used[i - 1]) continue;
+                used[i] = true;
+                path.push(sorted[i]);
+                walk(path);
+                path.pop();
+                used[i] = false;
+            }
+        };
+        walk([]);
         return result;
     }
 
-    buildInitialVoicing(pitchClasses, centerMidi) {
-        const minMidi = centerMidi - 20;
-        const maxMidi = centerMidi + 20;
-        const voicing = [];
-        pitchClasses.forEach((pc, idx) => {
-            const refMidi = idx === 0 ? centerMidi - 5 : voicing[idx - 1] + 4;
-            let voiced = this.findNearestPitchClass(pc, refMidi, minMidi, maxMidi);
-            while (idx > 0 && voiced <= voicing[idx - 1]) voiced += 12;
-            voicing.push(voiced);
+    scoreVoicing(voicing, refs, centerMidi) {
+        let cost = 0;
+        for (let i = 0; i < voicing.length; i++) {
+            const move = Math.abs(voicing[i] - refs[i]);
+            cost += move;
+            if (move > 5) cost += (move - 5) * 2.5;
+            if (i > 0) {
+                const spacing = voicing[i] - voicing[i - 1];
+                if (spacing < 3) cost += 40;
+                if (spacing > 12) cost += (spacing - 12) * 3;
+            }
+        }
+        const avg = voicing.reduce((sum, n) => sum + n, 0) / voicing.length;
+        cost += Math.abs(avg - centerMidi) * 0.8;
+        return cost;
+    }
+
+    chooseBestVoicing(pitchClasses) {
+        const centerMidi = 60;
+        const minMidi = 48;
+        const maxMidi = 72;
+        const refs = this.previousVoicing && this.previousVoicing.length === this.voiceCount
+            ? this.previousVoicing.slice()
+            : [53, 57, 60, 64];
+
+        let bestVoicing = null;
+        let bestCost = Infinity;
+        const permutations = this.uniquePermutations(pitchClasses);
+
+        permutations.forEach(perm => {
+            const choices = perm.map(pc => this.getMidiCandidatesForPitchClass(pc, minMidi, maxMidi));
+            const current = new Array(this.voiceCount);
+
+            const search = (idx, runningCost) => {
+                if (runningCost >= bestCost) return;
+                if (idx === this.voiceCount) {
+                    const finalCost = this.scoreVoicing(current, refs, centerMidi);
+                    if (finalCost < bestCost) {
+                        bestCost = finalCost;
+                        bestVoicing = current.slice();
+                    }
+                    return;
+                }
+
+                for (const note of choices[idx]) {
+                    if (idx > 0 && note <= current[idx - 1]) continue;
+                    const localMove = Math.abs(note - refs[idx]);
+                    const penalty = localMove > 5 ? (localMove - 5) * 2.5 : 0;
+                    current[idx] = note;
+                    search(idx + 1, runningCost + localMove + penalty);
+                }
+            };
+
+            search(0, 0);
         });
-        return this.recenterVoicing(voicing, centerMidi);
+
+        if (!bestVoicing) bestVoicing = [53, 57, 60, 64];
+        this.previousVoicing = bestVoicing.slice();
+        return bestVoicing.map(midi => this.midiToFreq(midi));
     }
 
     getVoicedFrequencies(rootIndex, type) {
-        const intervals = CHORDS_MAP[type] || CHORDS_MAP.maj;
-        const pitchClasses = intervals.map(interval => (rootIndex + interval + 120) % 12);
-        const centerMidi = 60 + (this.params.chordOctave * 12);
-        const minMidi = centerMidi - 20;
-        const maxMidi = centerMidi + 20;
-        let voicing;
-
-        if (!this.previousVoicing || this.previousVoicing.length !== pitchClasses.length) {
-            voicing = this.buildInitialVoicing(pitchClasses, centerMidi);
-        } else {
-            voicing = [];
-            pitchClasses.forEach((pc, idx) => {
-                const refMidi = this.previousVoicing[Math.min(idx, this.previousVoicing.length - 1)];
-                let voiced = this.findNearestPitchClass(pc, refMidi, minMidi, maxMidi);
-                if (idx > 0) {
-                    while (voiced <= voicing[idx - 1]) voiced += 12;
-                    while (voiced > maxMidi && voiced - 12 > voicing[idx - 1]) voiced -= 12;
-                }
-                voicing.push(voiced);
-            });
-            voicing = this.recenterVoicing(voicing, centerMidi);
-        }
-
-        this.previousVoicing = voicing.slice();
-        return voicing.map(midi => this.midiToFreq(midi));
+        const pitchClasses = this.getChordPitchClasses(rootIndex, type);
+        return this.chooseBestVoicing(pitchClasses);
     }
 
     playChord(rootIndex, type) {
@@ -603,7 +859,7 @@ class AudioEngine {
         const now = this.ctx.currentTime;
         const preset = CHORD_PRESETS[this.params.chordTone] || CHORD_PRESETS.mellotron;
         const freqs = this.getVoicedFrequencies(rootIndex, type);
-        const releaseTime = Math.max(0.12, Math.min(2.0, this.params.sustain * (preset.release || 0.8)));
+        const releaseTime = Math.max(0.14, Math.min(0.95, preset.release || 0.5));
         const attackTime = Math.max(0.01, preset.attack || 0.06);
         const targetGain = Math.min(0.22, 0.24 / Math.max(1, freqs.length));
 
@@ -687,7 +943,7 @@ class AudioEngine {
 
     stopAll() {
         const now = this.ctx.currentTime;
-        const releaseTime = Math.min(0.35, Math.max(0.08, this.params.sustain * 0.45));
+        const releaseTime = 0.12;
         this.activeVoices.forEach(v => {
             if(v.gains) {
                 v.gains.forEach(g => {
@@ -776,6 +1032,7 @@ const app = {
         this.renderGrid();
         this.bindEvents();
         this.setupKnobs();
+        this.setupFxControls();
         
         // Ensure AudioContext is inited on first interaction
         const resumeAudio = () => {
@@ -833,7 +1090,6 @@ const app = {
             };
             updateVisuals(val);
 
-            if (param === 'sustain') this.audio.params.sustain = 0.12 + ((val / 100) * 1.68);
             if (param === 'drumVol') this.audio.setVol('drum', val);
             if (param === 'chordVol') this.audio.setVol('chord', val);
 
@@ -846,7 +1102,6 @@ const app = {
                 val = Math.max(min, Math.min(max, startVal + change));
                 updateVisuals(val);
                 
-                if(param === 'sustain') this.audio.params.sustain = 0.12 + ((val / 100) * 1.68);
                 if(param === 'drumVol') this.audio.setVol('drum', val);
                 if(param === 'chordVol') this.audio.setVol('chord', val);
             };
@@ -866,6 +1121,28 @@ const app = {
             };
             knob.addEventListener('mousedown', onStart);
             knob.addEventListener('touchstart', onStart);
+        });
+    },
+
+    setupFxControls() {
+        const buttons = document.querySelectorAll('.fx-toggle');
+        const sliders = document.querySelectorAll('.fx-amount');
+
+        buttons.forEach(btn => {
+            const fx = btn.dataset.fx;
+            btn.onclick = () => {
+                const isOn = !btn.classList.contains('fx-on');
+                btn.classList.toggle('fx-on', isOn);
+                this.audio.setEffectEnabled(fx, isOn);
+            };
+        });
+
+        sliders.forEach(slider => {
+            const fx = slider.dataset.fx;
+            this.audio.setEffectAmount(fx, parseFloat(slider.value));
+            slider.addEventListener('input', () => {
+                this.audio.setEffectAmount(fx, parseFloat(slider.value));
+            });
         });
     },
 
@@ -945,10 +1222,6 @@ const app = {
 
         document.getElementById('chord-tone-select').onchange = (e) => this.audio.params.chordTone = e.target.value;
         document.getElementById('rhythm-select').onchange = (e) => this.state.currentPattern = e.target.value;
-        document.getElementById('octave-select').onchange = (e) => {
-            this.audio.params.chordOctave = parseInt(e.target.value, 10);
-            this.audio.resetVoicing();
-        };
 
         const playBtn = document.getElementById('play-btn');
         playBtn.onclick = () => {
