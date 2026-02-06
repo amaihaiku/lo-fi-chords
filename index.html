@@ -1030,6 +1030,16 @@ const app = {
         currentPattern: 'pop'
     },
     intervalId: null,
+    
+    // KRITIKUS: Knob értékek perzisztens tárolása
+    knobValues: {
+        drumVol: 50,
+        chordVol: 50,
+        bpm: 90,
+        fxReverb: 0,
+        fxDistortion: 0,
+        fxTremolo: 0
+    },
 
     init() {
         this.audio.init();
@@ -1076,6 +1086,10 @@ const app = {
                 const percent = (value - min) / (max - min);
                 const deg = -135 + (percent * 270);
                 indicator.style.transform = `translate(-50%, -100%) rotate(${deg}deg)`;
+                // KRITIKUS: Mentjük a globális state-be is
+                if(this.knobValues.hasOwnProperty(param)) {
+                    this.knobValues[param] = value;
+                }
             };
             updateVisuals(val);
 
@@ -1122,6 +1136,25 @@ const app = {
             };
             knob.addEventListener('mousedown', onStart);
             knob.addEventListener('touchstart', onStart);
+        });
+    },
+
+    restoreKnobs() {
+        // Visszaállítja a knob vizualizációkat a mentett értékekre
+        const knobs = document.querySelectorAll('.knob-container');
+        knobs.forEach(knob => {
+            const param = knob.dataset.param;
+            if(this.knobValues.hasOwnProperty(param)) {
+                const value = this.knobValues[param];
+                const min = parseFloat(knob.dataset.min);
+                const max = parseFloat(knob.dataset.max);
+                const percent = (value - min) / (max - min);
+                const deg = -135 + (percent * 270);
+                const indicator = knob.querySelector('.knob-indicator');
+                if(indicator) {
+                    indicator.style.transform = `translate(-50%, -100%) rotate(${deg}deg)`;
+                }
+            }
         });
     },
 
@@ -1255,6 +1288,9 @@ const app = {
                     this.intervalId = null;
                 }
             }
+            
+            // VÉDELEM: Visszaállítjuk a knob vizualizációkat
+            setTimeout(() => this.restoreKnobs(), 10);
             // FONTOS: Semmilyen setVol, audio.init, stb. hívás itt!
         };
 
@@ -1269,6 +1305,9 @@ const app = {
             if(!this.state.hold) {
                 this.audio.stopAll();
             }
+            
+            // VÉDELEM: Visszaállítjuk a knob vizualizációkat
+            setTimeout(() => this.restoreKnobs(), 10);
             // FONTOS: Semmilyen setVol, audio.init, stb. hívás itt!
         };
 
