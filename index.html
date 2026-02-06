@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Lo-Fi Chords">
+    <meta name="theme-color" content="#121214">
+    <title>Lo-Fi Chords</title>
+
+    <!-- Manifest & Icons (Lyre) -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="lyre-icon.svg">
+    <link rel="apple-touch-icon" href="lyre-icon.svg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600&display=swap');
+
+        :root {
+            --neon-blue: #00c3ff;
+            --neon-purple: #bd00ff;
+            --neon-orange: #ff9800;
+            --neon-red: #ff3d3d;
+            --neon-green: #00ff9d;
+            --bg-dark: #121214;
+            --panel-bg: rgba(22, 22, 28, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 300;
+            background-color: var(--bg-dark);
+            color: #e0e0e0;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000000 100%);
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        /* Portrait Warning */
+        #orientation-overlay { display: none; }
+        @media (orientation: portrait) {
+            #orientation-overlay { display: flex !important; }
+            header, main { display: none !important; }
+        }
+
+        /* Phone Rotate Animation */
+        @keyframes rotate-phone {
+            0%, 20%, 100% { transform: rotate(0deg); }
+            50%, 80% { transform: rotate(-90deg); }
+        }
+        .animate-rotate-phone {
+            animation: rotate-phone 2.5s infinite ease-in-out;
+            transform-origin: center;
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        /* UI Label - Lighter Gray */
+        .ui-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 10px;
+            color: #9ca3af;
+        }
+
+        /* --- KNOB STYLES --- */
+        .knob-container {
+            width: 44px;
+            height: 44px;
+            position: relative;
+            cursor: ns-resize;
+        }
+        .knob-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #2a2a2a, #111);
+            border: 1px solid #666;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+        }
+        .knob-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 45%;
+            background: currentColor;
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(-135deg);
+            border-radius: 2px;
+            box-shadow: 0 0 5px currentColor;
+            pointer-events: none;
+        }
+
+        .knob-scale {
+            width: 34px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 8px;
+            line-height: 1;
+            margin-top: 2px;
+            color: #6b7280;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        /* Small Knob for Header */
+        .knob-sm { width: 34px; height: 34px; }
+        .knob-sm .knob-circle { border-width: 1px; }
+
+        .knob-blue { color: var(--neon-blue); }
+        .knob-orange { color: var(--neon-orange); }
+        .knob-purple { color: var(--neon-purple); }
+        .knob-red { color: var(--neon-red); }
+
+        .knob-blue .knob-indicator { background: var(--neon-blue); }
+        .knob-orange .knob-indicator { background: var(--neon-orange); }
+        .knob-purple .knob-indicator { background: var(--neon-purple); }
+        .knob-red .knob-indicator { background: var(--neon-red); }
+
+        /* Chord Buttons */
+        .chord-btn {
+            transition: all 0.1s ease-out;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+        }
+        .chord-btn:active { transform: scale(0.98); }
+        .chord-btn.active {
+            background: #3a3a3a;
+            border-color: #555;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            color: #fff;
+            font-weight: 400;
+            text-shadow: none;
+        }
+        .chord-btn.hold-active {
+            background: #2a3a2a; 
+            border-color: var(--neon-green); 
+            border-width: 1px;
+        }
+
+        /* Updated Colors per user request */
+        .row-major-triad { border-bottom: 2px solid #005f7f; }
+        .row-major-7 { border-bottom: 2px solid #ff9800; }
+        .row-harm-triad { border-bottom: 2px solid #9c27b0; }
+        .row-harm-7 { border-bottom: 2px solid var(--neon-red); } /* CHANGED TO RED */
+
+        select, input {
+            background-color: #1a1a1a;
+            color: #eee;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+        }
+        
+        .play-active { 
+            background-color: rgba(0, 255, 157, 0.2) !important;
+            border-color: var(--neon-green) !important;
+            color: var(--neon-green) !important;
+            box-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+        }
+        
+        .btn-hold-active {
+            background-color: var(--neon-green) !important;
+            color: #000 !important;
+            border-color: var(--neon-green) !important;
+            font-weight: 600 !important;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.4);
+        }
+
+        .btn-rec-active { 
+            background-color: var(--neon-red) !important; 
+            color: white !important;
+            border-color: var(--neon-red) !important;
+            font-weight: 600 !important;
+            box-shadow: 0 0 15px rgba(255, 61, 61, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 0px; }
+
+        /* Power Button Style */
+        .power-btn:active {
+            transform: scale(0.95);
+            background-color: rgba(255, 61, 61, 0.2);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col overflow-hidden text-xs p-2 gap-2 font-light">
+
+    <!-- Orientation Overlay -->
+    <div id="orientation-overlay" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-center p-6">
+        <div class="mb-6 animate-rotate-phone">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                <path d="M12 18h.01" />
+            </svg>
+        </div>
+        <h2 class="text-white text-xl font-light mb-2 tracking-wide font-outfit">Forgatás szükséges</h2>
+        <p class="text-gray-400 font-light font-outfit">Az alkalmazás csak fekvő módban használható!</p>
+    </div>
+
+    <!-- Header (With Expanded Mixer including Sustain and Exit) -->
+    <header class="glass-panel px-3 py-1 flex items-center justify-between shrink-0 h-16 z-20">
+        <!-- Left: Controls -->
+        <div class="flex items-center gap-4">
+            <h1 class="text-neon-blue font-medium text-xl tracking-[0.1em] font-outfit hidden md:block" style="text-shadow: 0 0 15px rgba(0,195,255,0.3);">LO-FI CHORDS</h1>
+            
+            <div class="flex items-center gap-3 border-l border-gray-700 pl-3">
+                <div class="flex flex-col">
+                    <label class="ui-label mb-0.5">Hangnem</label>
+                    <select id="key-select" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 outline-none text-xs focus:border-neon-blue transition-colors w-16"></select>
+                </div>
+                <div class="flex flex-col w-12">
+                    <label class="ui-label mb-0.5">BPM</label>
+                    <input type="number" id="bpm-input" value="90" min="40" max="200" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 text-center text-xs outline-none focus:border-neon-blue transition-colors">
+                </div>
+                <div class="flex flex-col w-12">
+                    <label class="ui-label mb-0.5">Oktáv</label>
+                    <select id="octave-select" class="bg-gray-800/50 border border-gray-600 rounded px-1 py-0.5 outline-none text-xs text-center focus:border-neon-blue transition-colors">
+                        <option value="-1">-1</option>
+                        <option value="0" selected>0</option>
+                        <option value="1">+1</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Mixer (Knobs + Exit) -->
+        <div class="flex flex-1 items-center justify-evenly border-l border-gray-700 pl-4 ml-2">
+            <!-- DRUM -->
+            <div class="flex flex-col items-center">
+                <div class="knob-container knob-sm knob-red" data-param="drumVol" data-min="0" data-max="100" data-val="80">
+                    <div class="knob-circle"><div class="knob-indicator"></div></div>
+                </div>
+                <div class="knob-scale"><span>0</span><span>100</span></div>
+                <span class="ui-label text-[10px] mt-0 font-bold text-red-400">DOB</span>
+            </div>
+            <!-- CHORD -->
+            <div class="flex flex-col items-center">
+                <div class="knob-container knob-sm knob-purple" data-param="chordVol" data-min="0" data-max="100" data-val="70">
+                    <div class="knob-circle"><div class="knob-indicator"></div></div>
+                </div>
+                <div class="knob-scale"><span>0</span><span>100</span></div>
+                <span class="ui-label text-[10px] mt-0 font-bold text-purple-400">AKK</span>
+            </div>
+            <!-- SUSTAIN (Moved here) -->
+            <div class="flex flex-col items-center">
+                <div class="knob-container knob-sm knob-orange" id="knob-sustain" data-param="sustain" data-min="0" data-max="100" data-val="30">
+                    <div class="knob-circle"><div class="knob-indicator"></div></div>
+                </div>
+                <div class="knob-scale"><span>0</span><span>100</span></div>
+                <span class="ui-label text-[10px] mt-0 font-bold text-neon-orange" style="color: var(--neon-orange);">SUS</span>
+            </div>
+            
+            <!-- EXIT BUTTON -->
+            <button id="exit-btn" class="power-btn w-8 h-8 rounded-full border border-red-900/50 flex items-center justify-center text-red-500 bg-red-900/10 hover:bg-red-900/30 transition-all shadow-lg">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                    <line x1="12" y1="2" x2="12" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex gap-2 overflow-hidden min-h-0">
+        
+        <!-- Left: Chord Matrix -->
+        <div class="flex-grow glass-panel p-2 flex flex-col min-w-0 relative">
+            <div id="chord-grid" class="grid grid-cols-7 grid-rows-4 gap-2 h-full w-full">
+                <!-- JS Generated -->
+            </div>
+        </div>
+
+        <!-- Center: Console (Distributed Vertically) -->
+        <div class="w-52 shrink-0 glass-panel p-3 flex flex-col gap-2 overflow-hidden justify-between">
+            
+            <!-- 1. Chord Tone -->
+            <div class="flex flex-col gap-0.5 border-b border-gray-700/50 pb-2">
+                <label class="ui-label text-neon-purple">Akkord Hang</label>
+                <select id="chord-tone-select" class="bg-gray-800/50 border border-gray-600 rounded px-2 py-1 outline-none text-xs text-white w-full">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+
+            <!-- 2. Rhythm Control (Rectangular Button) -->
+            <div class="flex flex-col gap-1.5 bg-gray-900/40 p-2 rounded border border-gray-700/50">
+                <div class="flex items-center justify-between">
+                    <label class="ui-label text-[10px]">RITMUS</label>
+                </div>
+                <select id="rhythm-select" class="bg-gray-800 border border-gray-600 text-xs outline-none w-full p-1 rounded mb-1">
+                    <!-- Populated by JS -->
+                </select>
+                <button id="play-btn" class="w-full h-8 rounded bg-gray-700 flex items-center justify-center hover:bg-gray-600 border border-gray-500 transition-all active:scale-95 text-[10px] tracking-wider font-medium text-gray-300">
+                    START / STOP
+                </button>
+            </div>
+
+            <!-- 3. Hold/Rec (Taller Buttons) -->
+            <div class="flex gap-2 h-14">
+                <button id="hold-btn" class="flex-1 h-full bg-gray-800 rounded ui-label text-[10px] border border-gray-600 text-gray-300 transition-all shadow-md hover:bg-gray-700 tracking-wider">HOLD</button>
+                <button id="rec-btn" class="flex-1 h-full bg-gray-800 rounded ui-label text-[10px] border border-red-900/60 text-red-400 hover:bg-red-900/20 transition-all shadow-md tracking-wider">REC</button>
+            </div>
+        </div>
+
+    </main>
+
+<script>
+/**
+ * LO-FI CHORDS v3.2
+ */
+
+/* --- DATA --- */
+const NOTES = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "H"];
+const ROMAN_MAJ = ["I", "ii", "iii", "IV", "V", "vi", "vii°"];
+
+const SCALES = {
+    major: [0, 2, 4, 5, 7, 9, 11],
+    harmonicMinor: [0, 2, 3, 5, 7, 8, 11]
+};
+
+const CHORD_PRESETS = {
+    mellotron:   { name: 'Mellotron',   type: 'triangle', filter: 1800, attack: 0.08, detune: 4, sub: true, release: 0.65 },
+    epiano:      { name: 'E-Piano',     type: 'sine',     filter: 2600, attack: 0.02, detune: 2, fm: true, fmIndex: 8, release: 0.45 },
+    wurlitzer:   { name: 'Wurlitzer',   type: 'square',   filter: 2200, attack: 0.03, detune: 5, fm: true, fmIndex: 6, release: 0.5 },
+    fluteOrgan:  { name: 'Flute Organ', type: 'triangle', filter: 3000, attack: 0.06, detune: 1, sub: true, release: 0.8 },
+    warmPad:     { name: 'Warm Pad',    type: 'sawtooth', filter: 1400, attack: 0.2, detune: 7, release: 0.9 },
+    softStrings: { name: 'Soft Strings',type: 'triangle', filter: 1600, attack: 0.16, detune: 6, release: 0.85 }
+};
+
+const DRUM_PATTERNS = {
+    'pop':   { name: 'Standard Pop', pat: [1,0,3,0, 2,0,3,0, 1,0,3,0, 2,0,3,0] },
+    'rock':  { name: 'Basic Rock',   pat: [1,0,3,0, 2,0,3,1, 0,0,3,0, 2,0,3,0] },
+    'lofi1': { name: 'Lo-Fi Chill 1',pat: [1,0,0,0, 2,0,0,1, 0,0,1,0, 2,0,3,2] },
+    'lofi2': { name: 'Lo-Fi Chill 2',pat: [1,0,3,0, 0,0,2,0, 0,1,3,0, 2,0,0,0] },
+    'lofi3': { name: 'Drunken Beat', pat: [1,0,0,1, 2,0,0,0, 0,0,1,0, 2,0,0,1] }, 
+    'boom':  { name: 'Boom Bap',     pat: [1,0,3,1, 2,0,3,0, 0,1,3,0, 2,0,3,0] },
+    'disco': { name: 'Disco 4/4',    pat: [1,3,1,3, 2,3,1,3, 1,3,1,3, 2,3,1,3] },
+    'funk':  { name: 'Funky Break',  pat: [1,0,0,1, 2,0,1,0, 0,1,0,0, 2,0,4,0] },
+    'trap':  { name: 'Trap Basic',   pat: [1,0,0,0, 2,0,0,0, 1,0,1,0, 2,0,0,0] }, 
+    'house': { name: 'House',        pat: [1,3,0,3, 2,3,0,3, 1,3,0,3, 2,3,0,3] },
+    'waltz': { name: 'Waltz 3/4',    pat: [1,0,3,3, 2,0,3,0, 1,0,3,3, 2,0,3,0] }, 
+    'rnb':   { name: '90s R&B',      pat: [1,0,3,0, 2,0,3,1, 0,0,3,0, 2,0,3,4] },
+    'jazz':  { name: 'Jazz Swing',   pat: [1,0,3,4, 0,0,3,0, 0,0,3,4, 0,0,3,0] },
+    'dub':   { name: 'Dubstep Lite', pat: [1,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,0,0] },
+    'tech':  { name: 'Techno',       pat: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0] },
+    'boss':  { name: 'Bossa Nova',   pat: [1,0,0,1, 0,0,2,0, 1,0,0,1, 0,0,2,0] },
+    'shuf':  { name: 'Shuffle',      pat: [1,0,0,1, 2,0,0,1, 1,0,0,1, 2,0,0,1] },
+    'slow':  { name: 'Slow Jam',     pat: [1,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,1,0] },
+    'brk':   { name: 'Breakbeat',    pat: [1,0,0,0, 2,0,0,0, 0,0,1,0, 2,0,1,0] },
+    'min':   { name: 'Minimal',      pat: [1,0,0,0, 0,0,0,1, 0,0,0,0, 2,0,0,0] }
+};
+
+const CHORDS_MAP = {
+    maj: [0, 4, 7], min: [0, 3, 7], dim: [0, 3, 6], aug: [0, 4, 8],
+    maj7: [0, 4, 7, 11], min7: [0, 3, 7, 10], dom7: [0, 4, 7, 10],
+    minMaj7: [0, 3, 7, 11], dim7: [0, 3, 6, 9], halfDim: [0, 3, 6, 10]
+};
+
+const CHORD_QUALITY_MAP = {
+    M: 'maj', m: 'min', dim: 'dim', aug: 'aug',
+    M7: 'maj7', m7: 'min7', '7': 'dom7',
+    mM7: 'minMaj7', dim7: 'dim7', m7b5: 'halfDim'
+};
+
+class AudioEngine {
+    constructor() {
+        this.ctx = null;
+        this.master = null;
+        this.bus = { chord: null, drum: null };
+        this.filter = null;
+        this.limiter = null;
+        this.lfo = null;
+        this.lfoGain = null;
+        this.shaper = null;
+        this.activeVoices = [];
+        this.previousVoicing = null;
+        this.noiseBuffers = { snare: null, hat: null };
+        
+        this.params = {
+            filterFreq: 2000,
+            detune: 15,
+            masterVol: 0.5,
+            chordVol: 0.7,
+            drumVol: 0.8,
+            chordTone: 'mellotron',
+            sustain: 0.6,
+            chordOctave: 0 
+        };
+        
+        this.dest = null;
+        this.recorder = null;
+        this.chunks = [];
+    }
+
+    init() {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AC({ latencyHint: 'interactive' });
+        
+        // --- MASTER CHAIN ---
+        this.limiter = this.ctx.createDynamicsCompressor();
+        this.limiter.threshold.value = -10;
+        this.limiter.ratio.value = 12;
+        this.limiter.attack.value = 0.003;
+        
+        this.master = this.ctx.createGain();
+        this.master.gain.value = this.params.masterVol;
+        
+        // --- BUSES ---
+        this.bus.chord = this.ctx.createGain();
+        this.bus.chord.gain.value = this.params.chordVol;
+        this.bus.drum = this.ctx.createGain();
+        this.bus.drum.gain.value = this.params.drumVol;
+
+        // --- GLOBAL FX ---
+        this.filter = this.ctx.createBiquadFilter();
+        this.filter.type = "lowpass";
+        this.filter.Q.value = 0.7; 
+        this.filter.frequency.value = this.params.filterFreq;
+        
+        this.shaper = this.ctx.createWaveShaper();
+        this.updateCharacter(25); 
+
+        this.lfo = this.ctx.createOscillator();
+        this.lfo.frequency.value = 1.5; 
+        this.lfoGain = this.ctx.createGain();
+        this.lfoGain.gain.value = 0;
+        this.lfo.connect(this.lfoGain);
+        this.lfo.start();
+
+        // ROUTING
+        this.bus.chord.connect(this.filter);
+        this.bus.drum.connect(this.master);
+
+        this.filter.connect(this.shaper);
+        this.shaper.connect(this.master);
+        this.master.connect(this.limiter);
+        this.limiter.connect(this.ctx.destination);
+        
+        this.dest = this.ctx.createMediaStreamDestination();
+        this.limiter.connect(this.dest);
+
+        this.noiseBuffers.snare = this.createNoiseBuffer(0.15, 0.8);
+        this.noiseBuffers.hat = this.createNoiseBuffer(0.05, 0.5);
+    }
+
+    resume() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); }
+
+    setVol(type, val) {
+        if(!this.ctx) return;
+        const gain = val / 100;
+        if(type === 'chord') this.bus.chord.gain.setTargetAtTime(gain, this.ctx.currentTime, 0.05);
+        if(type === 'drum') this.bus.drum.gain.setTargetAtTime(gain, this.ctx.currentTime, 0.05);
+    }
+
+    setFilter(val) {
+        if(!this.ctx) return;
+        this.filter.frequency.setTargetAtTime(val, this.ctx.currentTime, 0.1);
+    }
+
+    setDetune(val) {
+        if(!this.ctx) return;
+        this.lfoGain.gain.setTargetAtTime(val * 0.5, this.ctx.currentTime, 0.1);
+        this.params.detune = val;
+    }
+
+    updateCharacter(amount) {
+        if(!this.ctx) return;
+        const k = amount * 0.5; 
+        const samples = 44100;
+        const curve = new Float32Array(samples);
+        const deg = Math.PI / 180;
+        for (let i = 0; i < samples; ++i) {
+            let x = (i * 2) / samples - 1;
+            curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x)); 
+        }
+        this.shaper.curve = curve;
+    }
+
+    resetVoicing() {
+        this.previousVoicing = null;
+    }
+
+    midiToFreq(midi) {
+        return 440 * Math.pow(2, (midi - 69) / 12);
+    }
+
+    createNoiseBuffer(seconds, amount) {
+        const size = Math.floor(this.ctx.sampleRate * seconds);
+        const buffer = this.ctx.createBuffer(1, size, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < size; i++) data[i] = (Math.random() * 2 - 1) * amount;
+        return buffer;
+    }
+
+    findNearestPitchClass(pc, refMidi, minMidi, maxMidi) {
+        const center = pc + (12 * Math.round((refMidi - pc) / 12));
+        const candidates = [center - 24, center - 12, center, center + 12, center + 24];
+
+        let best = center;
+        let bestDistance = Infinity;
+        candidates.forEach(candidate => {
+            if (candidate < minMidi || candidate > maxMidi) return;
+            const distance = Math.abs(candidate - refMidi);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = candidate;
+            }
+        });
+        if (!Number.isFinite(bestDistance)) best = Math.max(minMidi, Math.min(maxMidi, center));
+        return best;
+    }
+
+    recenterVoicing(voicing, centerMidi) {
+        const result = voicing.slice();
+        if (!result.length) return result;
+        let avg = result.reduce((sum, note) => sum + note, 0) / result.length;
+        while (avg < centerMidi - 4) {
+            for (let i = 0; i < result.length; i++) result[i] += 12;
+            avg += 12;
+        }
+        while (avg > centerMidi + 4) {
+            for (let i = 0; i < result.length; i++) result[i] -= 12;
+            avg -= 12;
+        }
+        return result;
+    }
+
+    buildInitialVoicing(pitchClasses, centerMidi) {
+        const minMidi = centerMidi - 20;
+        const maxMidi = centerMidi + 20;
+        const voicing = [];
+        pitchClasses.forEach((pc, idx) => {
+            const refMidi = idx === 0 ? centerMidi - 5 : voicing[idx - 1] + 4;
+            let voiced = this.findNearestPitchClass(pc, refMidi, minMidi, maxMidi);
+            while (idx > 0 && voiced <= voicing[idx - 1]) voiced += 12;
+            voicing.push(voiced);
+        });
+        return this.recenterVoicing(voicing, centerMidi);
+    }
+
+    getVoicedFrequencies(rootIndex, type) {
+        const intervals = CHORDS_MAP[type] || CHORDS_MAP.maj;
+        const pitchClasses = intervals.map(interval => (rootIndex + interval + 120) % 12);
+        const centerMidi = 60 + (this.params.chordOctave * 12);
+        const minMidi = centerMidi - 20;
+        const maxMidi = centerMidi + 20;
+        let voicing;
+
+        if (!this.previousVoicing || this.previousVoicing.length !== pitchClasses.length) {
+            voicing = this.buildInitialVoicing(pitchClasses, centerMidi);
+        } else {
+            voicing = [];
+            pitchClasses.forEach((pc, idx) => {
+                const refMidi = this.previousVoicing[Math.min(idx, this.previousVoicing.length - 1)];
+                let voiced = this.findNearestPitchClass(pc, refMidi, minMidi, maxMidi);
+                if (idx > 0) {
+                    while (voiced <= voicing[idx - 1]) voiced += 12;
+                    while (voiced > maxMidi && voiced - 12 > voicing[idx - 1]) voiced -= 12;
+                }
+                voicing.push(voiced);
+            });
+            voicing = this.recenterVoicing(voicing, centerMidi);
+        }
+
+        this.previousVoicing = voicing.slice();
+        return voicing.map(midi => this.midiToFreq(midi));
+    }
+
+    playChord(rootIndex, type) {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const preset = CHORD_PRESETS[this.params.chordTone] || CHORD_PRESETS.mellotron;
+        const freqs = this.getVoicedFrequencies(rootIndex, type);
+        const releaseTime = Math.max(0.12, Math.min(2.0, this.params.sustain * (preset.release || 0.8)));
+        const attackTime = Math.max(0.01, preset.attack || 0.06);
+        const targetGain = Math.min(0.22, 0.24 / Math.max(1, freqs.length));
+
+        this.activeVoices.forEach(v => {
+            if(v.state === 'playing') {
+                v.state = 'releasing';
+                if(v.gains) v.gains.forEach(g => {
+                    g.gain.cancelScheduledValues(now);
+                    g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), now);
+                    g.gain.exponentialRampToValueAtTime(0.0001, now + releaseTime);
+                });
+                v.osc.forEach(o => o.stop(now + releaseTime + 0.04));
+            }
+        });
+        this.activeVoices = [];
+
+        freqs.forEach((freq) => {
+            const oscList = [];
+            const gainList = [];
+            [-1, 1].forEach(panDir => {
+                const osc = this.ctx.createOscillator();
+                const vGain = this.ctx.createGain();
+                const panner = this.ctx.createStereoPanner();
+                
+                osc.type = preset.type;
+                let detune = (Math.random() - 0.5) * (preset.detune || 5);
+                if (panDir === 1) detune += 3;
+                osc.detune.value = detune;
+                osc.frequency.value = freq;
+                this.lfoGain.connect(osc.detune);
+
+                if (preset.fm) {
+                    const mod = this.ctx.createOscillator();
+                    const modGain = this.ctx.createGain();
+                    mod.type = 'sine';
+                    mod.frequency.value = freq * 2.0;
+                    modGain.gain.value = (preset.fmIndex || 50);
+                    mod.connect(modGain);
+                    modGain.connect(osc.frequency);
+                    mod.start(now);
+                    oscList.push(mod); 
+                }
+
+                let sourceNode = osc;
+                if (preset.filter) {
+                    const localFilter = this.ctx.createBiquadFilter();
+                    localFilter.type = preset.highpass ? "highpass" : "lowpass";
+                    localFilter.frequency.value = preset.filter;
+                    sourceNode.connect(localFilter);
+                    localFilter.connect(vGain);
+                } else {
+                    sourceNode.connect(vGain);
+                }
+
+                if (preset.sub) {
+                    const subOsc = this.ctx.createOscillator();
+                    subOsc.type = 'sine';
+                    subOsc.frequency.value = freq / 2;
+                    const subGain = this.ctx.createGain();
+                    subGain.gain.value = 0.4;
+                    subOsc.connect(subGain);
+                    subGain.connect(vGain); 
+                    subOsc.start(now);
+                    oscList.push(subOsc);
+                }
+
+                vGain.connect(panner);
+                panner.connect(this.bus.chord);
+                panner.pan.value = panDir * 0.3;
+
+                osc.start(now);
+                oscList.push(osc);
+                gainList.push(vGain);
+
+                vGain.gain.setValueAtTime(0.0001, now);
+                vGain.gain.exponentialRampToValueAtTime(targetGain, now + attackTime);
+            });
+            this.activeVoices.push({ osc: oscList, gains: gainList, state: 'playing' });
+        });
+    }
+
+    stopAll() {
+        const now = this.ctx.currentTime;
+        const releaseTime = Math.min(0.35, Math.max(0.08, this.params.sustain * 0.45));
+        this.activeVoices.forEach(v => {
+            if(v.gains) {
+                v.gains.forEach(g => {
+                    g.gain.cancelScheduledValues(now);
+                    g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), now);
+                    g.gain.exponentialRampToValueAtTime(0.0001, now + releaseTime);
+                });
+            }
+            v.osc.forEach(o => o.stop(now + releaseTime + 0.04));
+        });
+        this.activeVoices = [];
+    }
+
+    playDrum(type) {
+        const now = this.ctx.currentTime;
+        const vol = 1.0; 
+        
+        if (type === 1) { // Kick
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(45, now + 0.15);
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.exponentialRampToValueAtTime(vol, now + 0.005);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            osc.connect(g);
+            g.connect(this.bus.drum);
+            osc.start(now);
+            osc.stop(now + 0.4);
+        } else if (type === 2) { // Snare
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = this.noiseBuffers.snare || this.createNoiseBuffer(0.15, 0.8);
+            const f = this.ctx.createBiquadFilter();
+            f.type = "bandpass"; f.frequency.value = 2500; f.Q.value = 0.5;
+            const g = this.ctx.createGain();
+            g.gain.setValueAtTime(vol * 0.9, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            noise.connect(f); f.connect(g); g.connect(this.bus.drum);
+            noise.start(now);
+        } else if (type >= 3) { // Hat
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = this.noiseBuffers.hat || this.createNoiseBuffer(0.05, 0.5);
+            const f = this.ctx.createBiquadFilter();
+            f.type = "highpass"; f.frequency.value = 7000;
+            const g = this.ctx.createGain();
+            const dur = type===3 ? 0.05 : 0.15;
+            g.gain.setValueAtTime(type===3 ? 0.3 : 0.2, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+            noise.connect(f); f.connect(g); g.connect(this.bus.drum);
+            noise.start(now);
+        }
+    }
+
+    toggleRecord() {
+        if (this.recorder && this.recorder.state === 'recording') {
+            this.recorder.stop();
+            return false;
+        } else {
+            this.chunks = [];
+            this.recorder = new MediaRecorder(this.dest.stream);
+            this.recorder.ondataavailable = e => this.chunks.push(e.data);
+            this.recorder.onstop = e => {
+                const blob = new Blob(this.chunks, { type: 'audio/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `lofi-chord-session-${Date.now()}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+            };
+            this.recorder.start();
+            return true;
+        }
+    }
+}
+
+const app = {
+    audio: new AudioEngine(),
+    state: { key: 0, bpm: 90, drumOn: false, hold: false, currentPattern: 'pop' },
+    intervalId: null,
+
+    init() {
+        this.populateSelects();
+        this.renderGrid();
+        this.bindEvents();
+        this.setupKnobs();
+        
+        // Ensure AudioContext is inited on first interaction
+        const resumeAudio = () => {
+            if (this.audio.ctx && this.audio.ctx.state === 'suspended') {
+                this.audio.ctx.resume();
+            } else if (!this.audio.ctx) {
+                this.audio.init();
+            }
+            document.removeEventListener('click', resumeAudio);
+            document.removeEventListener('touchstart', resumeAudio);
+        };
+        document.addEventListener('click', resumeAudio);
+        document.addEventListener('touchstart', resumeAudio);
+        
+        // Initial init call
+        this.audio.init();
+    },
+
+    populateSelects() {
+        const keySel = document.getElementById('key-select');
+        NOTES.forEach((n, i) => {
+            const opt = document.createElement('option');
+            opt.value = i; opt.text = n;
+            keySel.appendChild(opt);
+        });
+
+        const chordSel = document.getElementById('chord-tone-select');
+        for (const [k, v] of Object.entries(CHORD_PRESETS)) {
+            const opt = document.createElement('option');
+            opt.value = k; opt.text = v.name;
+            chordSel.appendChild(opt);
+        }
+
+        const patSel = document.getElementById('rhythm-select');
+        for (const [k, v] of Object.entries(DRUM_PATTERNS)) {
+            const opt = document.createElement('option');
+            opt.value = k; opt.text = v.name;
+            patSel.appendChild(opt);
+        }
+    },
+
+    setupKnobs() {
+        const knobs = document.querySelectorAll('.knob-container');
+        knobs.forEach(knob => {
+            const indicator = knob.querySelector('.knob-indicator');
+            const min = parseFloat(knob.dataset.min);
+            const max = parseFloat(knob.dataset.max);
+            let val = parseFloat(knob.dataset.val);
+            const param = knob.dataset.param;
+
+            const updateVisuals = (value) => {
+                const percent = (value - min) / (max - min);
+                const deg = -135 + (percent * 270);
+                indicator.style.transform = `translate(-50%, -100%) rotate(${deg}deg)`;
+            };
+            updateVisuals(val);
+
+            if (param === 'sustain') this.audio.params.sustain = 0.12 + ((val / 100) * 1.68);
+            if (param === 'drumVol') this.audio.setVol('drum', val);
+            if (param === 'chordVol') this.audio.setVol('chord', val);
+
+            let startY = 0, startVal = 0;
+            const onMove = (e) => {
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const deltaY = startY - clientY;
+                const range = max - min;
+                const change = (deltaY / 150) * range; 
+                val = Math.max(min, Math.min(max, startVal + change));
+                updateVisuals(val);
+                
+                if(param === 'sustain') this.audio.params.sustain = 0.12 + ((val / 100) * 1.68);
+                if(param === 'drumVol') this.audio.setVol('drum', val);
+                if(param === 'chordVol') this.audio.setVol('chord', val);
+            };
+            
+            const onStart = (e) => {
+                e.preventDefault();
+                startY = e.touches ? e.touches[0].clientY : e.clientY;
+                startVal = val;
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', () => {
+                    window.removeEventListener('mousemove', onMove);
+                }, {once:true});
+                window.addEventListener('touchmove', onMove);
+                window.addEventListener('touchend', () => {
+                    window.removeEventListener('touchmove', onMove);
+                }, {once:true});
+            };
+            knob.addEventListener('mousedown', onStart);
+            knob.addEventListener('touchstart', onStart);
+        });
+    },
+
+    renderGrid() {
+        const grid = document.getElementById('chord-grid');
+        grid.innerHTML = '';
+        const root = parseInt(this.state.key);
+        
+        const majScale = SCALES.major.map(i => (root + i) % 12);
+        const relMinRoot = (root + 9) % 12;
+        const harmScale = SCALES.harmonicMinor.map(i => (relMinRoot + i) % 12);
+        
+        const rows = [
+            { scale: harmScale, quals: ['mM7', 'm7b5', 'M7', 'm7', '7', 'M7', 'dim7'], css: 'row-harm-7' },
+            { scale: harmScale, quals: ['m', 'dim', 'aug', 'm', 'M', 'M', 'dim'], css: 'row-harm-triad' },
+            { scale: majScale, quals: ['M7', 'm7', 'm7', 'M7', '7', 'm7', 'm7b5'], css: 'row-major-7' },
+            { scale: majScale, quals: ['M', 'm', 'm', 'M', 'M', 'm', 'dim'], css: 'row-major-triad' }
+        ];
+
+        rows.forEach((r, rIdx) => {
+            r.scale.forEach((nIdx, cIdx) => {
+                const noteName = NOTES[nIdx];
+                const q = r.quals[cIdx];
+                
+                // Modified Notation: "maj7" -> "∆7", "m7b5" -> "ø"
+                let dispQ = q.replace('M', '').replace('dim', '°').replace('aug', '+');
+                if(q === 'M7') dispQ = '∆7';
+                if(q === 'm7b5') dispQ = 'ø';
+                
+                const btn = document.createElement('div');
+                btn.className = `chord-btn ${r.css}`;
+                // CHANGED: Roman numerals to neon-orange
+                const roman = (rIdx === 3) ? `<span class="opacity-80 text-[11px] mb-0.5 font-medium" style="color: var(--neon-orange);">${ROMAN_MAJ[cIdx]}</span>` : '';
+                btn.innerHTML = `${roman}<span class="font-bold">${noteName}${dispQ}</span>`;
+                
+                const chordType = CHORD_QUALITY_MAP[q] || 'maj';
+                const trigger = (e) => { e.preventDefault(); this.triggerChord(btn, nIdx, chordType); };
+                btn.onpointerdown = trigger;
+                btn.onpointerup = () => { if (!this.state.hold) this.stopChord(btn); };
+                btn.onpointerleave = () => { if (!this.state.hold && btn.classList.contains('active')) this.stopChord(btn); };
+                
+                grid.appendChild(btn);
+            });
+        });
+    },
+
+    triggerChord(btn, root, type) {
+        document.querySelectorAll('.chord-btn').forEach(b => b.classList.remove('active', 'hold-active'));
+        btn.classList.add('active');
+        if(this.state.hold) btn.classList.add('hold-active');
+        this.audio.resume();
+        this.audio.playChord(root, type);
+    },
+
+    stopChord(btn) {
+        btn.classList.remove('active');
+        this.audio.stopAll();
+    },
+
+    startDrum() {
+        if(this.intervalId) clearInterval(this.intervalId);
+        let step = 0;
+        this.intervalId = setInterval(() => {
+            const pat = DRUM_PATTERNS[this.state.currentPattern].pat;
+            const sound = pat[step % 16];
+            if(sound > 0) this.audio.playDrum(sound);
+            step++;
+        }, (60000 / this.state.bpm) / 4);
+    },
+
+    bindEvents() {
+        document.getElementById('key-select').onchange = (e) => {
+            this.state.key = parseInt(e.target.value, 10);
+            this.audio.resetVoicing();
+            this.renderGrid();
+        };
+
+        document.getElementById('chord-tone-select').onchange = (e) => this.audio.params.chordTone = e.target.value;
+        document.getElementById('rhythm-select').onchange = (e) => this.state.currentPattern = e.target.value;
+        document.getElementById('octave-select').onchange = (e) => {
+            this.audio.params.chordOctave = parseInt(e.target.value, 10);
+            this.audio.resetVoicing();
+        };
+
+        const playBtn = document.getElementById('play-btn');
+        playBtn.onclick = () => {
+            this.state.drumOn = !this.state.drumOn;
+            playBtn.classList.toggle('play-active');
+            if(this.state.drumOn) this.startDrum(); else clearInterval(this.intervalId);
+        };
+        
+        document.getElementById('bpm-input').onchange = (e) => {
+            this.state.bpm = parseInt(e.target.value, 10);
+            if(this.state.drumOn) this.startDrum();
+        };
+
+        const hBtn = document.getElementById('hold-btn');
+        hBtn.onclick = () => {
+            this.state.hold = !this.state.hold;
+            hBtn.classList.toggle('btn-hold-active');
+            if(!this.state.hold) this.audio.stopAll();
+        };
+
+        const rBtn = document.getElementById('rec-btn');
+        rBtn.onclick = () => {
+            const on = this.audio.toggleRecord();
+            if(on) { 
+                rBtn.classList.add('btn-rec-active'); 
+                rBtn.textContent = 'STOP'; 
+            } else { 
+                rBtn.classList.remove('btn-rec-active'); 
+                rBtn.textContent = 'REC'; 
+            }
+        };
+
+        document.getElementById('exit-btn').onclick = () => {
+            // Simulate power off / reload
+            window.location.reload();
+        };
+    }
+};
+
+window.onload = () => {
+    if (typeof app !== 'undefined') {
+        app.init();
+    } else {
+        console.error('App not defined!');
+    }
+};
+</script>
+</body>
+</html>
