@@ -524,7 +524,21 @@ AudioEngine.init = function() {
 };
 
 AudioEngine.resume = function() { 
-    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); 
+    if (this.ctx && this.ctx.state === 'suspended') {
+        // KRITIKUS: Mentsük el a jelenlegi hangerőket
+        const savedDrumVol = this.params.drumVol;
+        const savedChordVol = this.params.chordVol;
+        
+        this.ctx.resume().then(() => {
+            // Resume után azonnal visszaállítjuk a hangerőket
+            if(this.bus.drum) {
+                this.bus.drum.gain.setValueAtTime(savedDrumVol, this.ctx.currentTime);
+            }
+            if(this.bus.chord) {
+                this.bus.chord.gain.setValueAtTime(savedChordVol, this.ctx.currentTime);
+            }
+        });
+    }
 };
 
 AudioEngine.setVol = function(type, val) {
@@ -1169,6 +1183,12 @@ const app = {
     },
 
     startDrum() {
+        // EXTRA VÉDELEM: Biztosítsuk hogy a dob hangerő a helyén van
+        if(this.audio.bus.drum && this.audio.ctx) {
+            const currentDrumGain = this.audio.params.drumVol;
+            this.audio.bus.drum.gain.setValueAtTime(currentDrumGain, this.audio.ctx.currentTime);
+        }
+        
         // Tiszta restart - NEM változtat hangerőn
         if(this.intervalId) {
             clearInterval(this.intervalId);
@@ -1220,22 +1240,36 @@ const app = {
 
         const playBtn = document.getElementById('drum-btn');
         playBtn.onclick = () => {
+            // KRITIKUS: NE VÁLTOZTASS SEMMIT A HANGERŐN!
+            // Csak state, UI és interval kezelés
             this.state.drumOn = !this.state.drumOn;
             playBtn.classList.toggle('play-active');
+            
             if(this.state.drumOn) {
+                // Dob indítás - NEM érinti a bus.drum gain-t
                 this.startDrum();
             } else {
-                clearInterval(this.intervalId);
+                // Dob leállítás - CSAK az interval-t állítjuk le
+                if(this.intervalId) {
+                    clearInterval(this.intervalId);
+                    this.intervalId = null;
+                }
             }
+            // FONTOS: Semmilyen setVol, audio.init, stb. hívás itt!
         };
 
         const hBtn = document.getElementById('hold-btn');
         hBtn.onclick = () => {
+            // KRITIKUS: NE VÁLTOZTASS SEMMIT A HANGERŐN!
+            // Csak state és UI kezelés
             this.state.hold = !this.state.hold;
             hBtn.classList.toggle('btn-hold-active');
+            
+            // Ha kikapcsoljuk a hold-ot, leállítjuk az akkordot
             if(!this.state.hold) {
                 this.audio.stopAll();
             }
+            // FONTOS: Semmilyen setVol, audio.init, stb. hívás itt!
         };
 
         const rBtn = document.getElementById('rec-btn');
