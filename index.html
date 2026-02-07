@@ -368,6 +368,40 @@
             transform: scale(0.95);
             background-color: rgba(255, 61, 61, 0.2);
         }
+        
+        /* Voicing Mode Toggle */
+        .voicing-btn {
+            background: transparent;
+            color: #9ca3af;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .voicing-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .voicing-btn.active {
+            background: var(--neon-blue);
+            color: #000;
+            font-weight: 700;
+        }
+        
+        /* LCD Theme - Voicing Toggle */
+        body.theme-lcd .voicing-toggle {
+            background: transparent;
+            border: 2px solid var(--lcd-ink);
+        }
+        body.theme-lcd .voicing-btn {
+            color: var(--lcd-ink);
+            border-right: 1px solid var(--lcd-ink);
+        }
+        body.theme-lcd .voicing-btn:last-child {
+            border-right: none;
+        }
+        body.theme-lcd .voicing-btn.active {
+            background: var(--lcd-ink);
+            color: var(--lcd-bg);
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col overflow-hidden text-xs p-2 gap-2 font-light">
@@ -449,6 +483,16 @@
                 </div>
                 <div class="knob-scale"><span>0</span><span>100</span></div>
                 <span class="ui-label text-[10px] mt-0 font-bold text-purple-400">TRM</span>
+            </div>
+            
+            <!-- VOICING MODE TOGGLE -->
+            <div class="flex flex-col items-center">
+                <div class="voicing-toggle flex bg-gray-800/50 border border-gray-600 rounded overflow-hidden" style="width: 80px; height: 34px;">
+                    <button class="voicing-btn flex-1 text-[9px] font-bold transition-all" data-mode="smooth">SM</button>
+                    <button class="voicing-btn flex-1 text-[9px] font-bold transition-all" data-mode="open">OP</button>
+                    <button class="voicing-btn flex-1 text-[9px] font-bold transition-all" data-mode="root">RT</button>
+                </div>
+                <span class="ui-label text-[10px] mt-1 font-bold text-gray-400">MODE</span>
             </div>
         </div>
 
@@ -594,7 +638,8 @@ const AudioEngine = {
     lfo: null,
     lfoGain: null,
     voices: [],
-    voiceCount: 4,
+    voiceCount: 5, // 4 chord voices + 1 bass
+    bassVoice: null, // Dedicated bass oscillator
     previousVoicing: null,
     noiseBuffers: {},
     fxNodes: {},
@@ -605,7 +650,8 @@ const AudioEngine = {
         masterVol: 0.5,
         chordVol: 0.5,
         drumVol: 0.5,
-        chordTone: 'mellotron'
+        chordTone: 'mellotron',
+        voicingMode: 'smooth' // smooth, open, root
     },
 
     fxState: {
@@ -827,7 +873,9 @@ AudioEngine.createReverbImpulse = function(seconds, decay) {
 
 AudioEngine.createVoiceBank = function() {
     const panPositions = [-0.18, -0.06, 0.06, 0.18];
-    for (let i = 0; i < this.voiceCount; i++) {
+    
+    // Create 4 chord voices
+    for (let i = 0; i < 4; i++) {
         const osc = this.ctx.createOscillator();
         const subOsc = this.ctx.createOscillator();
         const filter = this.ctx.createBiquadFilter();
@@ -865,6 +913,29 @@ AudioEngine.createVoiceBank = function() {
             detuneBase: (i - 1.5) * 0.7
         });
     }
+    
+    // Create dedicated BASS voice (5th voice)
+    const bassOsc = this.ctx.createOscillator();
+    const bassFilter = this.ctx.createBiquadFilter();
+    const bassGain = this.ctx.createGain();
+    
+    bassOsc.type = 'sine'; // Pure sine for deep bass
+    bassFilter.type = 'lowpass';
+    bassFilter.frequency.value = 300; // Low-pass for bass
+    bassFilter.Q.value = 0.5;
+    bassGain.gain.value = 0.0001;
+    
+    bassOsc.connect(bassFilter);
+    bassFilter.connect(bassGain);
+    bassGain.connect(this.bus.chord);
+    
+    bassOsc.start();
+    
+    this.bassVoice = {
+        osc: bassOsc,
+        filter: bassFilter,
+        gain: bassGain
+    };
 };
 
 AudioEngine.updateCharacter = function(amount) {
@@ -882,6 +953,31 @@ AudioEngine.updateCharacter = function(amount) {
 
 AudioEngine.resetVoicing = function() {
     this.previousVoicing = null;
+};
+
+// DROP-2 VOICING: Felülről 2. hangot 1 oktávval mélyebbre dobja
+AudioEngine.applyDrop2 = function(voicing) {
+    if (voicing.length < 3) return voicing; // Túl kevés hang
+    const result = voicing.slice(); // Copy
+    const secondFromTop = result[result.length - 2];
+    result[result.length - 2] = secondFromTop - 12; // 1 oktáv lejjebb
+    result.sort((a, b) => a - b); // Rendezés
+    return result;
+};
+
+// ROOT VOICING: Basszus + nyitott upper voices
+AudioEngine.applyRootVoicing = function(rootNote, voicing) {
+    // Root note 2 oktávval mélyebbre
+    const bass = rootNote + 24; // C2 környékén
+    // Felső hangok széthúzva
+    const upper = voicing.slice();
+    return { bass, upper };
+};
+
+// DRIFT DETECTION: Túl messze ment a voicing a központtól?
+AudioEngine.detectDrift = function(voicing, centerMidi = 58) {
+    const avg = voicing.reduce((sum, n) => sum + n, 0) / voicing.length;
+    return Math.abs(avg - centerMidi) > 12; // Ha 1 oktávnál messzebb van
 };
 
 AudioEngine.midiToFreq = function(midi) {
@@ -957,25 +1053,34 @@ AudioEngine.scoreVoicing = function(voicing, refs, centerMidi, chordPitchClasses
     return cost;
 };
 
-AudioEngine.chooseBestVoicing = function(pitchClasses) {
+AudioEngine.chooseBestVoicing = function(pitchClasses, mode = 'smooth') {
     const centerMidi = 58;
     const minMidi = 46;
     const maxMidi = 70;
-    const refs = this.previousVoicing && this.previousVoicing.length === this.voiceCount
+    const chordVoiceCount = 4; // Only 4 chord voices (bass is separate)
+    
+    // Smart Reset: Ha túl messze driftelt, reset középre
+    const refs = this.previousVoicing && this.previousVoicing.length === chordVoiceCount
         ? this.previousVoicing.slice()
         : [50, 53, 57, 60];
+        
+    // Detect drift
+    if (this.previousVoicing && this.detectDrift(this.previousVoicing, centerMidi)) {
+        // Reset to center
+        this.previousVoicing = null;
+    }
 
     let bestVoicing = null;
     let bestCost = Infinity;
-    const permutations = this.uniquePermutations(pitchClasses);
+    const permutations = this.uniquePermutations(pitchClasses.slice(0, chordVoiceCount));
 
     permutations.forEach(perm => {
         const choices = perm.map((pc, idx) => this.getMidiCandidatesForPitchClass(pc, minMidi, maxMidi, refs[idx]));
-        const current = new Array(this.voiceCount);
+        const current = new Array(chordVoiceCount);
 
         const search = (idx, runningCost) => {
             if (runningCost >= bestCost) return;
-            if (idx === this.voiceCount) {
+            if (idx === chordVoiceCount) {
                 const finalCost = this.scoreVoicing(current, refs, centerMidi, pitchClasses);
                 if (finalCost < bestCost) {
                     bestCost = finalCost;
@@ -1004,35 +1109,58 @@ AudioEngine.chooseBestVoicing = function(pitchClasses) {
     });
 
     if (!bestVoicing) bestVoicing = refs.slice();
+    
+    // Apply voicing mode transformation
+    if (mode === 'open' && bestVoicing.length >= 3) {
+        bestVoicing = this.applyDrop2(bestVoicing);
+    }
+    // 'smooth' and 'root' use the same upper voicing (root only affects bass)
+    
     this.previousVoicing = bestVoicing.slice();
-    return bestVoicing.map(midi => this.midiToFreq(midi));
+    return bestVoicing;
 };
 
 AudioEngine.getVoicedFrequencies = function(rootIndex, type) {
     const pitchClasses = this.getChordPitchClasses(rootIndex, type);
-    return this.chooseBestVoicing(pitchClasses);
+    const mode = this.params.voicingMode || 'smooth';
+    
+    // Get best voicing for 4 upper voices
+    const voicingMidi = this.chooseBestVoicing(pitchClasses, mode);
+    const upperFreqs = voicingMidi.map(midi => this.midiToFreq(midi));
+    
+    // Calculate bass frequency (root note)
+    let bassMidi;
+    if (mode === 'root') {
+        // ROOT mode: Bass 2 octaves down from middle
+        bassMidi = rootIndex + 24; // C2 area (around MIDI 36)
+    } else {
+        // SMOOTH/OPEN mode: Bass 1 octave below lowest upper voice
+        bassMidi = voicingMidi[0] - 12;
+    }
+    const bassFreq = this.midiToFreq(bassMidi);
+    
+    return { upper: upperFreqs, bass: bassFreq };
 };
 
 AudioEngine.playChord = function(rootIndex, type) {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const preset = CHORD_PRESETS[this.params.chordTone] || CHORD_PRESETS.mellotron;
-    const freqs = this.getVoicedFrequencies(rootIndex, type);
+    const { upper, bass } = this.getVoicedFrequencies(rootIndex, type);
     
-    // MOBIL OPTIMALIZÁLÁS: Még rövidebb attack és glide
+    // Attack & Glide settings
     const attackTime = Math.max(0.02, preset.attack || 0.06);
-    const glideTime = 0.03; // Nagyon rövid glide mobil eszközökön
-    const targetGain = Math.min(0.16, 0.18 / Math.max(1, freqs.length));
+    const glideTime = 0.03;
+    const targetGain = Math.min(0.16, 0.18 / Math.max(1, upper.length));
 
+    // Play 4 upper chord voices
     this.voices.forEach((voice, idx) => {
-        const freq = freqs[idx];
+        const freq = upper[idx];
         const hasVoice = typeof freq === 'number' && Number.isFinite(freq);
 
-        // Preset alkalmazása
         voice.osc.type = preset.type || 'triangle';
         voice.filter.type = preset.highpass ? 'highpass' : 'lowpass';
         
-        // Filter simán változik
         const currentFilterFreq = voice.filter.frequency.value;
         const targetFilterFreq = preset.filter || 2000;
         voice.filter.frequency.cancelScheduledValues(now);
@@ -1044,12 +1172,10 @@ AudioEngine.playChord = function(rootIndex, type) {
             voice.osc.detune.cancelScheduledValues(now);
             voice.osc.detune.setValueAtTime(det, now);
             
-            // KRITIKUS: Frekvencia váltás optimalizálása
             const currentFreq = voice.osc.frequency.value;
             voice.osc.frequency.cancelScheduledValues(now);
             voice.osc.frequency.setValueAtTime(currentFreq, now);
             
-            // Ha kis a frekvencia különbség, exponenciális, ha nagy, linear
             const freqDiff = Math.abs(freq - currentFreq);
             if (freqDiff < 100) {
                 voice.osc.frequency.exponentialRampToValueAtTime(freq, now + glideTime);
@@ -1057,7 +1183,6 @@ AudioEngine.playChord = function(rootIndex, type) {
                 voice.osc.frequency.linearRampToValueAtTime(freq, now + glideTime);
             }
 
-            // Sub oszcillátor
             const currentSubFreq = voice.subOsc.frequency.value;
             voice.subOsc.frequency.cancelScheduledValues(now);
             voice.subOsc.frequency.setValueAtTime(currentSubFreq, now);
@@ -1071,7 +1196,6 @@ AudioEngine.playChord = function(rootIndex, type) {
             voice.subGain.gain.setValueAtTime(voice.subGain.gain.value, now);
             voice.subGain.gain.linearRampToValueAtTime(preset.sub ? 0.14 : 0.0, now + 0.04);
             
-            // KRITIKUS: Gain envelope optimalizálása
             const currentGain = voice.gain.gain.value;
             voice.gain.gain.cancelScheduledValues(now);
             voice.gain.gain.setValueAtTime(currentGain < 0.001 ? 0.001 : currentGain, now);
@@ -1086,6 +1210,27 @@ AudioEngine.playChord = function(rootIndex, type) {
             voice.subGain.gain.linearRampToValueAtTime(0.0, now + 0.04);
         }
     });
+    
+    // Play BASS voice
+    if (this.bassVoice && bass) {
+        const currentBassFreq = this.bassVoice.osc.frequency.value;
+        this.bassVoice.osc.frequency.cancelScheduledValues(now);
+        this.bassVoice.osc.frequency.setValueAtTime(currentBassFreq, now);
+        
+        const bassFreqDiff = Math.abs(bass - currentBassFreq);
+        if (bassFreqDiff < 50) {
+            this.bassVoice.osc.frequency.exponentialRampToValueAtTime(bass, now + glideTime);
+        } else {
+            this.bassVoice.osc.frequency.linearRampToValueAtTime(bass, now + glideTime);
+        }
+        
+        // Bass gain
+        const bassGain = targetGain * 1.5; // Louder bass
+        const currentBassGain = this.bassVoice.gain.gain.value;
+        this.bassVoice.gain.gain.cancelScheduledValues(now);
+        this.bassVoice.gain.gain.setValueAtTime(currentBassGain < 0.001 ? 0.001 : currentBassGain, now);
+        this.bassVoice.gain.gain.linearRampToValueAtTime(bassGain, now + attackTime);
+    }
 };
 
 AudioEngine.stopAll = function() {
@@ -1094,6 +1239,7 @@ AudioEngine.stopAll = function() {
     const preset = CHORD_PRESETS[this.params.chordTone] || CHORD_PRESETS.mellotron;
     const releaseTime = Math.min(0.5, preset.release || 0.4);
     
+    // Stop upper voices
     this.voices.forEach(v => {
         const currentGain = v.gain.gain.value;
         const currentSubGain = v.subGain.gain.value;
@@ -1106,6 +1252,14 @@ AudioEngine.stopAll = function() {
         v.subGain.gain.setValueAtTime(currentSubGain < 0.001 ? 0.001 : currentSubGain, now);
         v.subGain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
     });
+    
+    // Stop bass voice
+    if (this.bassVoice) {
+        const currentBassGain = this.bassVoice.gain.gain.value;
+        this.bassVoice.gain.gain.cancelScheduledValues(now);
+        this.bassVoice.gain.gain.setValueAtTime(currentBassGain < 0.001 ? 0.001 : currentBassGain, now);
+        this.bassVoice.gain.gain.linearRampToValueAtTime(0.0001, now + releaseTime);
+    }
 };
 
 AudioEngine.playDrum = function(type) {
@@ -1427,6 +1581,25 @@ const app = {
                 this.startDrum();
             }
         };
+
+        // VOICING MODE TOGGLE
+        const voicingBtns = document.querySelectorAll('.voicing-btn');
+        voicingBtns.forEach(btn => {
+            btn.onclick = () => {
+                // Remove active from all
+                voicingBtns.forEach(b => b.classList.remove('active'));
+                // Add active to clicked
+                btn.classList.add('active');
+                // Update voicing mode
+                const mode = btn.dataset.mode;
+                this.audio.params.voicingMode = mode;
+                // Reset voicing for smooth transition
+                this.audio.resetVoicing();
+            };
+        });
+        // Set default active (smooth)
+        document.querySelector('[data-mode="smooth"]').classList.add('active');
+
 
         const playBtn = document.getElementById('drum-btn');
         playBtn.onclick = () => {
