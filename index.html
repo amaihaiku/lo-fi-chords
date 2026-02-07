@@ -722,19 +722,7 @@ AudioEngine.init = function() {
 
 AudioEngine.resume = function() { 
     if (this.ctx && this.ctx.state === 'suspended') {
-        // KRITIKUS: Mentsük el a jelenlegi hangerőket
-        const savedDrumVol = this.params.drumVol;
-        const savedChordVol = this.params.chordVol;
-        
-        this.ctx.resume().then(() => {
-            // Resume után azonnal visszaállítjuk a hangerőket
-            if(this.bus.drum) {
-                this.bus.drum.gain.setValueAtTime(savedDrumVol, this.ctx.currentTime);
-            }
-            if(this.bus.chord) {
-                this.bus.chord.gain.setValueAtTime(savedChordVol, this.ctx.currentTime);
-            }
-        });
+        this.ctx.resume();
     }
 };
 
@@ -1335,16 +1323,6 @@ const app = {
         currentPattern: 'pop'
     },
     intervalId: null,
-    
-    // KRITIKUS: Knob értékek perzisztens tárolása
-    knobValues: {
-        drumVol: 50,
-        chordVol: 50,
-        bpm: 90,
-        fxReverb: 0,
-        fxDistortion: 0,
-        fxTremolo: 0
-    },
 
     init() {
         this.audio.init();
@@ -1391,10 +1369,6 @@ const app = {
                 const percent = (value - min) / (max - min);
                 const deg = -135 + (percent * 270);
                 indicator.style.transform = `translate(-50%, -100%) rotate(${deg}deg)`;
-                // KRITIKUS: Mentjük a globális state-be is
-                if(this.knobValues.hasOwnProperty(param)) {
-                    this.knobValues[param] = value;
-                }
             };
             updateVisuals(val);
 
@@ -1441,25 +1415,6 @@ const app = {
             };
             knob.addEventListener('mousedown', onStart);
             knob.addEventListener('touchstart', onStart);
-        });
-    },
-
-    restoreKnobs() {
-        // Visszaállítja a knob vizualizációkat a mentett értékekre
-        const knobs = document.querySelectorAll('.knob-container');
-        knobs.forEach(knob => {
-            const param = knob.dataset.param;
-            if(this.knobValues.hasOwnProperty(param)) {
-                const value = this.knobValues[param];
-                const min = parseFloat(knob.dataset.min);
-                const max = parseFloat(knob.dataset.max);
-                const percent = (value - min) / (max - min);
-                const deg = -135 + (percent * 270);
-                const indicator = knob.querySelector('.knob-indicator');
-                if(indicator) {
-                    indicator.style.transform = `translate(-50%, -100%) rotate(${deg}deg)`;
-                }
-            }
         });
     },
 
@@ -1521,13 +1476,7 @@ const app = {
     },
 
     startDrum() {
-        // EXTRA VÉDELEM: Biztosítsuk hogy a dob hangerő a helyén van
-        if(this.audio.bus.drum && this.audio.ctx) {
-            const currentDrumGain = this.audio.params.drumVol;
-            this.audio.bus.drum.gain.setValueAtTime(currentDrumGain, this.audio.ctx.currentTime);
-        }
-        
-        // Tiszta restart - NEM változtat hangerőn
+        // Tiszta restart - NEM változtat SEMMIT az audio-ban
         if(this.intervalId) {
             clearInterval(this.intervalId);
         }
@@ -1603,42 +1552,27 @@ const app = {
 
         const playBtn = document.getElementById('drum-btn');
         playBtn.onclick = () => {
-            // KRITIKUS: NE VÁLTOZTASS SEMMIT A HANGERŐN!
-            // Csak state, UI és interval kezelés
             this.state.drumOn = !this.state.drumOn;
             playBtn.classList.toggle('play-active');
             
             if(this.state.drumOn) {
-                // Dob indítás - NEM érinti a bus.drum gain-t
                 this.startDrum();
             } else {
-                // Dob leállítás - CSAK az interval-t állítjuk le
                 if(this.intervalId) {
                     clearInterval(this.intervalId);
                     this.intervalId = null;
                 }
             }
-            
-            // VÉDELEM: Visszaállítjuk a knob vizualizációkat
-            setTimeout(() => this.restoreKnobs(), 10);
-            // FONTOS: Semmilyen setVol, audio.init, stb. hívás itt!
         };
 
         const hBtn = document.getElementById('hold-btn');
         hBtn.onclick = () => {
-            // KRITIKUS: NE VÁLTOZTASS SEMMIT A HANGERŐN!
-            // Csak state és UI kezelés
             this.state.hold = !this.state.hold;
             hBtn.classList.toggle('btn-hold-active');
             
-            // Ha kikapcsoljuk a hold-ot, leállítjuk az akkordot
             if(!this.state.hold) {
                 this.audio.stopAll();
             }
-            
-            // VÉDELEM: Visszaállítjuk a knob vizualizációkat
-            setTimeout(() => this.restoreKnobs(), 10);
-            // FONTOS: Semmilyen setVol, audio.init, stb. hívás itt!
         };
 
         const rBtn = document.getElementById('rec-btn');
